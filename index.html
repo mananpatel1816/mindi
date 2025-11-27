@@ -1,0 +1,680 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!doctype html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1">&lt;meta charset="utf-8" /&gt;</p>
+<p class="p1">&lt;meta name="viewport" content="width=device-width,initial-scale=1" /&gt;</p>
+<p class="p1">&lt;title&gt;Mindi Multiplayer — Firebase Realtime&lt;/title&gt;</p>
+<p class="p1">&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>:root{--bg:#071126;--card:#fff;--muted:#9aa6b2;--accent:#f6c85f}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background:linear-gradient(180deg,#071126 0%, #07263a 100%);color:white;min-height:100vh}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.wrap{max-width:1100px;margin:18px auto;padding:18px;}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>header{display:flex;align-items:center;justify-content:space-between;gap:12px}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>h1{margin:0;font-size:1.3rem}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.panel{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:14px}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.home-grid{display:flex;gap:12px;flex-wrap:wrap}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted)}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.muted{color:var(--muted)}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.small{font-size:.9rem}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.game-area{display:flex;gap:16px;flex-wrap:wrap}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.col{flex:1;min-width:260px}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.hand{display:flex;gap:6px;flex-wrap:wrap}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.card{width:64px;height:92px;border-radius:6px;background:var(--card);color:#0b1220;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 10px rgba(2,6,23,0.4)}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.card.red{color:#b91c1c}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.table{display:flex;gap:12px;align-items:center}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>#log{height:140px;overflow:auto;background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;font-size:0.9rem}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>input, select{background:transparent;border:1px solid rgba(255,255,255,0.06);color:white;padding:8px;border-radius:8px}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.players-grid{display:flex;gap:6px;flex-wrap:wrap}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.slot{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);min-width:130px}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>footer{margin-top:14px;color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;align-items:center}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.center{display:flex;align-items:center;gap:8px}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>@media (max-width:880px){ .game-area{flex-direction:column} }</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1">&lt;div class="wrap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;header&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;h1&gt;Mindi Multiplayer (Firebase Realtime)&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="muted small"&gt;Create or join a live game — free hosting via GitHub Pages + Firebase&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="homeBtn" class="btn secondary"&gt;Home&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="newRoomBtn" class="btn"&gt;New Game&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div id="mainArea" class="panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Home Screen --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="homeScreen"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;h3&gt;Choose player count&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="home-grid"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;button class="btn" data-players="4"&gt;4 Players&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="muted small"&gt;Uses 1 deck, REMOVE all 2s&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;button class="btn" data-players="6"&gt;6 Players&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="muted small"&gt;Uses 1 deck, REMOVE all 2s&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;button class="btn" data-players="8"&gt;8 Players&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="muted small"&gt;Uses 1 deck with 2s included&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;hr style="margin:14px 0;border:0;border-top:1px solid rgba(255,255,255,0.04)"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;h4&gt;Join existing game&lt;/h4&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="display:flex;gap:8px;align-items:center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;input id="joinCode" placeholder="Enter game code (e.g. X7A2P9)" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;input id="playerName" placeholder="Your name (optional)" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;button id="joinBtn" class="btn"&gt;Join&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="margin-top:10px" class="muted small"&gt;Tip: share the game code with friends — they will join the same live game.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Game Screen --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="gameScreen" style="display:none"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div&gt;&lt;strong&gt;Game:&lt;/strong&gt; &lt;span id="gameCodeDisplay"&gt;—&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="muted small"&gt;Players needed: &lt;span id="playersNeeded"&gt;—&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="muted small"&gt;Your slot: &lt;span id="yourSlot"&gt;—&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="muted"&gt;Status: &lt;strong id="statusText"&gt;—&lt;/strong&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="startBtn" class="btn secondary"&gt;Start Game&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="game-area" style="margin-top:12px"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="col panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;h4&gt;Table&lt;/h4&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="table" style="margin-bottom:10px"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="deck" class="card" style="width:80px;height:110px"&gt;Deck&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="discard" class="card" style="width:80px;height:110px"&gt;Discard&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="muted"&gt;Draws left: &lt;span id="deckCount"&gt;0&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h5&gt;Players&lt;/h5&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="playersGrid" class="players-grid"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style="margin-top:8px"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h5&gt;Log&lt;/h5&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="log"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="col panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;h4&gt;Your Hand&lt;/h4&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div id="hand" class="hand"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style="margin-top:10px" class="center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button id="drawBtn" class="btn"&gt;Draw&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button id="takeDiscardBtn" class="btn secondary"&gt;Take Discard&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button id="discardBtn" class="btn secondary"&gt;Discard Selected&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style="margin-top:12px"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h5&gt;Controls&lt;/h5&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="muted small"&gt;Click a card in your hand to select it for discard. Use Draw / Take Discard then Discard Selected to end your turn.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Firebase config / status area --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style="margin-top:12px" class="muted small"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;Firebase Status: &lt;span id="fbStatus"&gt;Not initialized&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="margin-top:6px"&gt;When the page is closed, your player slot will be marked disconnected but still stays until owner clears or room times out.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;footer&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="muted"&gt;Built with Firebase Realtime Database — free to run. Host on GitHub Pages.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="muted"&gt;Tip: use Chrome/Edge for best realtime behavior.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/footer&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;!-- Firebase compat (simpler for quick copy/paste) --&gt;</p>
+<p class="p1">&lt;script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"&gt;&lt;/script&gt;</p>
+<p class="p1">&lt;script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"&gt;&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">/* ---------- CONFIG: paste your Firebase config here ---------- */</p>
+<p class="p2"><br></p>
+<p class="p1">// Your Firebase configuration</p>
+<p class="p1">const firebaseConfig = {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>authDomain: "mindi-game-93625.firebaseapp.com",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>databaseURL: "https://mindi-game-93625-default-rtdb.firebaseio.com",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>projectId: "mindi-game-93625",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>storageBucket: "mindi-game-93625.firebasestorage.app",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>messagingSenderId: "432897237762",</p>
+<p class="p1"><span class="Apple-converted-space">  </span>appId: "1:432897237762:web:c48c42f7bd63bfeab7d81b"</p>
+<p class="p1">};</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1">/* ------------------------------------------------------------ */</p>
+<p class="p2"><br></p>
+<p class="p1">if(!firebaseConfig.databaseURL){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('fbStatus').textContent = 'Missing firebaseConfig.databaseURL — paste your config in the file.';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>console.warn('Please paste your Firebase config (with databaseURL) into the firebaseConfig variable.');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// init firebase</p>
+<p class="p1">let app, db;</p>
+<p class="p1">try{</p>
+<p class="p1"><span class="Apple-converted-space">  </span>app = firebase.initializeApp(firebaseConfig);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>db = firebase.database();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('fbStatus').textContent = 'Initialized';</p>
+<p class="p1">} catch(e){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>console.error('Firebase init failed', e);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('fbStatus').textContent = 'Init failed: see console';</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ---------- Basic Mindi multiplayer logic ---------- */</p>
+<p class="p2"><br></p>
+<p class="p1">/* Data model in Realtime DB:</p>
+<p class="p1"><span class="Apple-converted-space"> </span>/games/{gameId} = {</p>
+<p class="p1"><span class="Apple-converted-space">   </span>settings: {playersNeeded:4|6|8, includeTwos: true|false, createdAt, started:false },</p>
+<p class="p1"><span class="Apple-converted-space">   </span>players: { slot0: {name, connected:true/false, id}, slot1:... },</p>
+<p class="p1"><span class="Apple-converted-space">   </span>deck: [ 'AS', '10H', ... ],<span class="Apple-converted-space">  </span>// top is end of array (pop)</p>
+<p class="p1"><span class="Apple-converted-space">   </span>discard: [ ... ],</p>
+<p class="p1"><span class="Apple-converted-space">   </span>hands: { slot0: ['10H','3C'], slot1: [...] },</p>
+<p class="p1"><span class="Apple-converted-space">   </span>turnIndex: 0, // which slot's turn</p>
+<p class="p1"><span class="Apple-converted-space">   </span>log: [ {t, msg} ]</p>
+<p class="p1"><span class="Apple-converted-space"> </span>}</p>
+<p class="p1">*/</p>
+<p class="p2"><br></p>
+<p class="p1">const ALPHANUM = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';</p>
+<p class="p1">function makeCode(len=6){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let out='';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(let i=0;i&lt;len;i++) out += ALPHANUM[Math.floor(Math.random()*ALPHANUM.length)];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return out;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">const SUITS = ['S','H','D','C']; // we use short codes for storage</p>
+<p class="p1">const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];</p>
+<p class="p2"><br></p>
+<p class="p1">function makeDeck(includeTwos=true){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const deck=[];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(const s of SUITS){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for(const r of RANKS){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(!includeTwos &amp;&amp; r==='2') continue;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>deck.push(r+s);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>shuffleArray(deck);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return deck;</p>
+<p class="p1">}</p>
+<p class="p1">function shuffleArray(a){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(let i=a.length-1;i&gt;0;i--){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const j=Math.floor(Math.random()*(i+1));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>[a[i],a[j]]=[a[j],a[i]];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* UI */</p>
+<p class="p1">const homeScreen = document.getElementById('homeScreen');</p>
+<p class="p1">const gameScreen = document.getElementById('gameScreen');</p>
+<p class="p1">const gameCodeDisplay = document.getElementById('gameCodeDisplay');</p>
+<p class="p1">const playersNeededEl = document.getElementById('playersNeeded');</p>
+<p class="p1">const playersGrid = document.getElementById('playersGrid');</p>
+<p class="p1">const handDiv = document.getElementById('hand');</p>
+<p class="p1">const deckEl = document.getElementById('deck');</p>
+<p class="p1">const discardEl = document.getElementById('discard');</p>
+<p class="p1">const deckCount = document.getElementById('deckCount');</p>
+<p class="p1">const statusText = document.getElementById('statusText');</p>
+<p class="p1">const logDiv = document.getElementById('log');</p>
+<p class="p1">const yourSlotEl = document.getElementById('yourSlot');</p>
+<p class="p1">const startBtn = document.getElementById('startBtn');</p>
+<p class="p1">const fbStatusEl = document.getElementById('fbStatus');</p>
+<p class="p2"><br></p>
+<p class="p1">let localPlayerId = 'p_' + Math.random().toString(36).slice(2,9);</p>
+<p class="p1">let localName = '';</p>
+<p class="p1">let currentGameId = null;</p>
+<p class="p1">let localSlotIndex = null;</p>
+<p class="p1">let playersNeeded = null;</p>
+<p class="p2"><br></p>
+<p class="p1">function appendLog(msg){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const t = new Date().toLocaleTimeString();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>logDiv.innerHTML = `&lt;div style="margin-bottom:6px"&gt;&lt;span class="muted small"&gt;${t}&lt;/span&gt; — ${msg}&lt;/div&gt;` + logDiv.innerHTML;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Home buttons */</p>
+<p class="p1">document.querySelectorAll('[data-players]').forEach(btn=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">  </span>btn.addEventListener('click', async (ev)=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const p = parseInt(btn.getAttribute('data-players'),10);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>await createGame(p);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1">});</p>
+<p class="p1">document.getElementById('joinBtn').addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const code = document.getElementById('joinCode').value.trim().toUpperCase();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const name = document.getElementById('playerName').value.trim() || 'Player';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!code) return alert('Enter room code');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>localName = name;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>joinGame(code);</p>
+<p class="p1">});</p>
+<p class="p1">document.getElementById('newRoomBtn').addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// show home</p>
+<p class="p1"><span class="Apple-converted-space">  </span>homeScreen.style.display='block';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gameScreen.style.display='none';</p>
+<p class="p1">});</p>
+<p class="p1">document.getElementById('homeBtn').addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>homeScreen.style.display='block';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gameScreen.style.display='none';</p>
+<p class="p1">});</p>
+<p class="p2"><br></p>
+<p class="p1">startBtn.addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!currentGameId) return;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>startGame(currentGameId);</p>
+<p class="p1">});</p>
+<p class="p2"><br></p>
+<p class="p1">/* Create a new game in Realtime DB */</p>
+<p class="p1">async function createGame(playerCount){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const code = makeCode(6);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>currentGameId = code;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>playersNeeded = playerCount;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const includeTwos = (playerCount === 8);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const path = `games/${currentGameId}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const settings = {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>playersNeeded: playerCount,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>includeTwos: includeTwos,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>createdAt: Date.now(),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>started: false</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// initial players slots empty</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const playersObj = {};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(let i=0;i&lt;playerCount;i++){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>playersObj['slot'+i] = { name: null, id: null, connected:false };</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const initial = {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>settings,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>players: playersObj,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>deck: [],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>discard: [],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>hands: {},</p>
+<p class="p1"><span class="Apple-converted-space">    </span>turnIndex: 0,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>log: []</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>await db.ref(path).set(initial);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>appendLog(`Created room ${currentGameId} — players: ${playerCount}`);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// auto-join as first player</p>
+<p class="p1"><span class="Apple-converted-space">  </span>localName = prompt('Your display name (optional)') || 'Host';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>await joinGame(currentGameId);</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Join existing */</p>
+<p class="p1">async function joinGame(code){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>code = code.trim().toUpperCase();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const path = `games/${code}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const snap = await db.ref(path + '/settings').get();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!snap.exists()){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return alert('Game not found: ' + code);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// read settings</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const settings = snap.val();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>playersNeeded = settings.playersNeeded;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// find empty slot using transaction</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// We'll try to occupy lowest-numbered free slot</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let joinedSlot = null;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(let i=0;i&lt;playersNeeded;i++){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const slotRef = db.ref(path + '/players/slot'+i);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const res = await slotRef.transaction(curr=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(curr === null) return curr; // safety</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(!curr.id){</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// occupy</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return { name: localName || ('Player'+(i+1)), id: localPlayerId, connected: true };</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return; // abort (no change)</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}, {committed: true});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// if committed and value has our id, we got slot</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(res.committed &amp;&amp; res.snapshot &amp;&amp; res.snapshot.val() &amp;&amp; res.snapshot.val().id === localPlayerId){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>joinedSlot = i;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>break;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// transaction didn't write (occupied)</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// continue</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(joinedSlot === null){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// maybe some slot had a disconnected player but we can steal if idle? keep simple: deny join if full</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// check if any slot has connected:false or id:null and override</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const playersSnap = await db.ref(path + '/players').get();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const playersVal = playersSnap.val();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for(let i=0;i&lt;playersNeeded;i++){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const p = playersVal['slot'+i];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(!p || !p.connected || !p.id){</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// occupy via set</p>
+<p class="p1"><span class="Apple-converted-space">        </span>await db.ref(path + '/players/slot'+i).set({ name: localName || ('Player'+(i+1)), id: localPlayerId, connected: true });</p>
+<p class="p1"><span class="Apple-converted-space">        </span>joinedSlot = i;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>break;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(joinedSlot === null){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return alert('Room full. Please join another room or create a new game.');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// set local state and listeners</p>
+<p class="p1"><span class="Apple-converted-space">  </span>currentGameId = code;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>localSlotIndex = joinedSlot;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>yourSlotEl.textContent = 'Slot ' + joinedSlot;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>appendLog('Joined room ' + code + ' as slot ' + joinedSlot);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>showGameScreen();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>bindGameListeners(currentGameId);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// log join in game log</p>
+<p class="p1"><span class="Apple-converted-space">  </span>db.ref(`games/${currentGameId}/log`).push({t:Date.now(), msg: (localName||'Player') + ' joined (slot '+joinedSlot+')'});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// set presence: mark connected true while window open; on unload set connected false</p>
+<p class="p1"><span class="Apple-converted-space">  </span>window.addEventListener('beforeunload', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(currentGameId !== null){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>db.ref(`games/${currentGameId}/players/slot${localSlotIndex}`).update({ connected:false });</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Show UI */</p>
+<p class="p1">function showGameScreen(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>homeScreen.style.display='none';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gameScreen.style.display='block';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gameCodeDisplay.textContent = currentGameId || '—';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>playersNeededEl.textContent = playersNeeded || '—';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>statusText.textContent = 'Waiting';</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Listen to game changes */</p>
+<p class="p1">let gameListener = null;</p>
+<p class="p1">function bindGameListeners(gameId){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(gameListener) gameListener.off();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const ref = db.ref(`games/${gameId}`);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gameListener = ref;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>ref.on('value', snap=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const data = snap.val();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!data) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// update UI</p>
+<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById('gameCodeDisplay').textContent = gameId;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>playersNeededEl.textContent = data.settings.playersNeeded;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>deckCount.textContent = (data.deck &amp;&amp; data.deck.length) || 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>discardEl.innerHTML = (data.discard &amp;&amp; data.discard.length)? cardHTML(data.discard[data.discard.length-1]) : 'Empty';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>statusText.textContent = data.settings.started ? `Started — turn: ${data.turnIndex}` : 'Waiting to start';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// players grid</p>
+<p class="p1"><span class="Apple-converted-space">    </span>renderPlayers(data.players, data.hands);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// your hand</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const yourHand = (data.hands &amp;&amp; data.hands['slot'+localSlotIndex]) || [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>renderHand(yourHand);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// logs</p>
+<p class="p1"><span class="Apple-converted-space">    </span>renderLog(data.log || []);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function renderPlayers(playersObj, hands){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>playersGrid.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(let i=0;i&lt;playersNeeded;i++){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const p = playersObj['slot'+i] || {name: null, id:null, connected:false};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const cardCount = (hands &amp;&amp; hands['slot'+i]) ? hands['slot'+i].length : 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const el = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>el.className = 'slot';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>el.innerHTML = `&lt;div&gt;&lt;strong&gt;${p.name || ('Slot '+i)}&lt;/strong&gt; ${p.connected?'&lt;span class="muted"&gt;●&lt;/span&gt;':'&lt;span class="muted"&gt;○&lt;/span&gt;'}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="muted small"&gt;Cards: ${cardCount}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="muted small"&gt;Slot: ${i}&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>playersGrid.appendChild(el);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function renderHand(cards){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>handDiv.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(let i=0;i&lt;cards.length;i++){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const code = cards[i];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const el = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const isRed = code.endsWith('H') || code.endsWith('D');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>el.className = 'card' + (isRed ? ' red' : '');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>el.textContent = pretty(code);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>el.dataset.idx = i;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>el.addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// toggle selected style</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const sel = handDiv.querySelector('.selected');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(sel) sel.classList.remove('selected');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(sel !== el) el.classList.add('selected');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>handDiv.appendChild(el);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* pretty print */</p>
+<p class="p1">function pretty(code){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// code like '10H' -&gt; '10♥'</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const r = code.slice(0, code.length-1);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const s = code.slice(-1);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const suit = s==='H'?'♥':s==='D'?'♦':s==='S'?'♠':'♣';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return r + suit;</p>
+<p class="p1">}</p>
+<p class="p1">function cardHTML(code){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return `&lt;div class="card ${code.endsWith('H')||code.endsWith('D') ? 'red':''}" style="width:80px;height:110px"&gt;${pretty(code)}&lt;/div&gt;`;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* log renderer */</p>
+<p class="p1">function renderLog(logArr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>logDiv.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const rev = (logArr || []).slice(-200).reverse();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(const item of rev){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const time = item.t ? new Date(item.t).toLocaleTimeString() : '';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>logDiv.innerHTML += `&lt;div style="margin-bottom:6px"&gt;&lt;span class="muted small"&gt;${time}&lt;/span&gt; — ${item.msg}&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Start game: deal cards and set deck */</p>
+<p class="p1">async function startGame(gameId){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const base = `games/${gameId}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const settingsSnap = await db.ref(base + '/settings').get();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!settingsSnap.exists()) return alert('Game not found');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const settings = settingsSnap.val();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(settings.started) return alert('Game already started');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// prepare deck</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const deck = makeDeck(settings.includeTwos);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// deal initial hands: deal 5 cards each (or change if you want)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const hands = {};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const playersNeeded = settings.playersNeeded;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const cardsPerPlayer = 5;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for(let i=0;i&lt;playersNeeded;i++){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>hands['slot'+i] = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for(let k=0;k&lt;cardsPerPlayer;k++){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>hands['slot'+i].push(deck.pop());</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const discard = [deck.pop()];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// push to db (transactional single update)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>await db.ref(base).update({</p>
+<p class="p1"><span class="Apple-converted-space">    </span>deck: deck,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>discard: discard,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>hands: hands,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>turnIndex: 0,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>'settings/started': true</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>await db.ref(base + '/log').push({t:Date.now(), msg: 'Game started'});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>appendLog('Game started and cards dealt.');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Player actions: draw from deck (transaction), take discard (transaction), discard card (push to discard and remove from hand) */</p>
+<p class="p2"><br></p>
+<p class="p1">/* Draw from deck: atomic pop */</p>
+<p class="p1">async function drawFromDeck(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const base = `games/${currentGameId}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const deckRef = db.ref(base + '/deck');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// transaction to pop one</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const res = await deckRef.transaction(curr=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr || curr.length === 0) return; // abort - no cards</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const copy = curr.slice(0);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const card = copy.pop();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return copy;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, {applyLocally:false});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!res.committed){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>appendLog('No cards to draw (deck empty) — attempt to reshuffle from discard');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// attempt reshuffle from discard if discard &gt;1</p>
+<p class="p1"><span class="Apple-converted-space">    </span>await reshuffleFromDiscard();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// we popped a card; we need to add it to our hand</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// But transaction doesn't return popped card. To obtain popped card reliably we should read after transaction (race possible).</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// Simpler approach: use a single transaction on entire game node to atomic-pop-and-add-to-hand</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// (Implement that below as safer)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>await drawFromDeckAtomic();</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Safer atomic draw/pop+add to hand */</p>
+<p class="p1">async function drawFromDeckAtomic(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const base = `games/${currentGameId}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gameRef = db.ref(base);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const res = await gameRef.transaction(curr=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// handle empty deck: reshuffle if possible</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.deck || curr.deck.length === 0){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return; // abort; caller should call reshuffle</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const deckCopy = curr.deck.slice(0);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const card = deckCopy.pop();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.deck = deckCopy;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// add to hand</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.hands) curr.hands = {};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.hands['slot'+localSlotIndex].push(card);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// append log</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.log) curr.log = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.log.push({t:Date.now(), msg: (localName || ('Player'+localSlotIndex)) + ' drew from deck'});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return curr;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, {applyLocally:false});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!res.committed){</p>
+<p class="p1"><span class="Apple-converted-space">    </span>appendLog('Draw failed (deck empty or concurrency). Attempting reshuffle.');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>await reshuffleFromDiscard();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>appendLog('Drew a card from deck.');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Reshuffle discard into deck when deck empty (keep top discard) */</p>
+<p class="p1">async function reshuffleFromDiscard(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const base = `games/${currentGameId}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gameRef = db.ref(base);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const res = await gameRef.transaction(curr=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.discard || curr.discard.length &lt;= 1) return; // nothing to reshuffle</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const top = curr.discard.pop(); // keep top</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const newDeck = curr.discard.slice(0);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// shuffle</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for(let i=newDeck.length-1;i&gt;0;i--){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const j = Math.floor(Math.random()*(i+1));</p>
+<p class="p1"><span class="Apple-converted-space">      </span>[newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.deck = newDeck;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.discard = [top];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.log = curr.log || [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.log.push({t:Date.now(), msg: 'Deck reshuffled from discard'});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return curr;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, {applyLocally:false});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(res.committed) appendLog('Deck reshuffled from discard.');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Take discard (atomic pop last of discard and add to hand) */</p>
+<p class="p1">async function takeDiscard(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const base = `games/${currentGameId}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gameRef = db.ref(base);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const res = await gameRef.transaction(curr=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.discard || curr.discard.length === 0) return; // abort</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const card = curr.discard.pop();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.hands) curr.hands = {};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.hands['slot'+localSlotIndex].push(card);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.log = curr.log || [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' took discard ' + card});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return curr;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, {applyLocally:false});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(res.committed) appendLog('Took discard into hand.');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>else appendLog('Take discard failed (maybe empty or concurrency).');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* Discard selected: remove selected card from your hand and push to discard, then advance turn */</p>
+<p class="p1">async function discardSelected(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// find selected card in UI</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const sel = handDiv.querySelector('.card.selected');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!sel) return alert('Select a card in your hand to discard');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const idx = parseInt(sel.dataset.idx,10);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const base = `games/${currentGameId}`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gameRef = db.ref(base);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const res = await gameRef.transaction(curr=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!curr.hands || !curr.hands['slot'+localSlotIndex]) return; // abort</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const hand = curr.hands['slot'+localSlotIndex];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(idx &lt;0 || idx &gt;= hand.length) return; // abort</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const card = hand.splice(idx,1)[0];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.discard = curr.discard || [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.discard.push(card);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// advance turn</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.turnIndex = ( (curr.turnIndex || 0) + 1 ) % (curr.settings.playersNeeded || 4);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.log = curr.log || [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' discarded ' + card});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// check Mindi: if any player now has all four 10s -&gt; declare winner</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for(let s=0;s&lt;(curr.settings.playersNeeded||4);s++){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const h = curr.hands['slot'+s] || [];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const tens = h.filter(c=&gt;c.startsWith('10')).length;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(tens === 4){</p>
+<p class="p1"><span class="Apple-converted-space">        </span>curr.log.push({t:Date.now(), msg: 'MINDI! Slot '+s+' has all four 10s'});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>curr.settings.started = false; // stop game</p>
+<p class="p1"><span class="Apple-converted-space">        </span>curr.winner = s;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>break;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return curr;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}, {applyLocally:false});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(res.committed) appendLog('Discarded card and advanced turn.');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>else appendLog('Discard failed due to concurrency.');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">/* button hooks */</p>
+<p class="p1">document.getElementById('drawBtn').addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!currentGameId) return alert('Join a game first');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>drawFromDeckAtomic();</p>
+<p class="p1">});</p>
+<p class="p1">document.getElementById('takeDiscardBtn').addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!currentGameId) return alert('Join a game first');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>takeDiscard();</p>
+<p class="p1">});</p>
+<p class="p1">document.getElementById('discardBtn').addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!currentGameId) return alert('Join a game first');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>discardSelected();</p>
+<p class="p1">});</p>
+<p class="p2"><br></p>
+<p class="p1">/* simple create/join helpers for when room is created via newGameBtn */</p>
+<p class="p1">document.getElementById('newRoomBtn').addEventListener('click', ()=&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>// show home (users create new from buttons)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>homeScreen.style.display='block';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>gameScreen.style.display='none';</p>
+<p class="p1">});</p>
+<p class="p2"><br></p>
+<p class="p1">appendLog('Client ready. Create a new game to start.');</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
