@@ -305,16 +305,20 @@ async function joinGame(code){
   let joinedSlot = null;
   for(let i=0;i<playersNeeded;i++){
     const slotRef = db.ref(path + '/players/slot'+i);
-    const res = await slotRef.transaction(curr=>{
-      if(curr === null) return curr;
-      if(!curr.id){
-        return { name: localName || ('Player'+(i+1)), id: localPlayerId, connected: true };
+    try {
+      const res = await slotRef.transaction(function(curr){
+        if(curr === null) return curr;
+        if(!curr.id){
+          return { name: localName || ('Player'+(i+1)), id: localPlayerId, connected: true };
+        }
+        return;
+      });
+      if(res.committed && res.snapshot && res.snapshot.val() && res.snapshot.val().id === localPlayerId){
+        joinedSlot = i;
+        break;
       }
-      return;
-    }, {committed: true});
-    if(res.committed && res.snapshot && res.snapshot.val() && res.snapshot.val().id === localPlayerId){
-      joinedSlot = i;
-      break;
+    } catch(e) {
+      console.error('Transaction error:', e);
     }
   }
   if(joinedSlot === null){
@@ -458,66 +462,80 @@ async function startGame(gameId){
 async function drawFromDeckAtomic(){
   const base = `games/${currentGameId}`;
   const gameRef = db.ref(base);
-  const res = await gameRef.transaction(curr=>{
-    if(!curr) return;
-    if(!curr.deck || curr.deck.length === 0){
+  try {
+    const res = await gameRef.transaction(function(curr){
+      if(!curr) return;
+      if(!curr.deck || curr.deck.length === 0){
+        return;
+      }
+      const deckCopy = curr.deck.slice(0);
+      const card = deckCopy.pop();
+      curr.deck = deckCopy;
+      if(!curr.hands) curr.hands = {};
+      if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];
+      curr.hands['slot'+localSlotIndex].push(card);
+      if(!curr.log) curr.log = [];
+      curr.log.push({t:Date.now(), msg: (localName || ('Player'+localSlotIndex)) + ' drew from deck'});
+      return curr;
+    });
+    if(!res.committed){
+      appendLog('Draw failed (deck empty or concurrency). Attempting reshuffle.');
+      await reshuffleFromDiscard();
       return;
     }
-    const deckCopy = curr.deck.slice(0);
-    const card = deckCopy.pop();
-    curr.deck = deckCopy;
-    if(!curr.hands) curr.hands = {};
-    if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];
-    curr.hands['slot'+localSlotIndex].push(card);
-    if(!curr.log) curr.log = [];
-    curr.log.push({t:Date.now(), msg: (localName || ('Player'+localSlotIndex)) + ' drew from deck'});
-    return curr;
-  }, {applyLocally:false});
-  if(!res.committed){
-    appendLog('Draw failed (deck empty or concurrency). Attempting reshuffle.');
-    await reshuffleFromDiscard();
-    return;
+    appendLog('Drew a card from deck.');
+  } catch(e) {
+    console.error('Draw error:', e);
+    appendLog('Draw failed: ' + e.message);
   }
-  appendLog('Drew a card from deck.');
 }
 
 async function reshuffleFromDiscard(){
   const base = `games/${currentGameId}`;
   const gameRef = db.ref(base);
-  const res = await gameRef.transaction(curr=>{
-    if(!curr) return;
-    if(!curr.discard || curr.discard.length <= 1) return;
-    const top = curr.discard.pop();
-    const newDeck = curr.discard.slice(0);
-    for(let i=newDeck.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
-    }
-    curr.deck = newDeck;
-    curr.discard = [top];
-    curr.log = curr.log || [];
-    curr.log.push({t:Date.now(), msg: 'Deck reshuffled from discard'});
-    return curr;
-  }, {applyLocally:false});
-  if(res.committed) appendLog('Deck reshuffled from discard.');
+  try {
+    const res = await gameRef.transaction(function(curr){
+      if(!curr) return;
+      if(!curr.discard || curr.discard.length <= 1) return;
+      const top = curr.discard.pop();
+      const newDeck = curr.discard.slice(0);
+      for(let i=newDeck.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+      }
+      curr.deck = newDeck;
+      curr.discard = [top];
+      curr.log = curr.log || [];
+      curr.log.push({t:Date.now(), msg: 'Deck reshuffled from discard'});
+      return curr;
+    });
+    if(res.committed) appendLog('Deck reshuffled from discard.');
+  } catch(e) {
+    console.error('Reshuffle error:', e);
+  }
 }
 
 async function takeDiscard(){
   const base = `games/${currentGameId}`;
   const gameRef = db.ref(base);
-  const res = await gameRef.transaction(curr=>{
-    if(!curr) return;
-    if(!curr.discard || curr.discard.length === 0) return;
-    const card = curr.discard.pop();
-    if(!curr.hands) curr.hands = {};
-    if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];
-    curr.hands['slot'+localSlotIndex].push(card);
-    curr.log = curr.log || [];
-    curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' took discard ' + card});
-    return curr;
-  }, {applyLocally:false});
-  if(res.committed) appendLog('Took discard into hand.');
-  else appendLog('Take discard failed (maybe empty or concurrency).');
+  try {
+    const res = await gameRef.transaction(function(curr){
+      if(!curr) return;
+      if(!curr.discard || curr.discard.length === 0) return;
+      const card = curr.discard.pop();
+      if(!curr.hands) curr.hands = {};
+      if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];
+      curr.hands['slot'+localSlotIndex].push(card);
+      curr.log = curr.log || [];
+      curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' took discard ' + card});
+      return curr;
+    });
+    if(res.committed) appendLog('Took discard into hand.');
+    else appendLog('Take discard failed (maybe empty or concurrency).');
+  } catch(e) {
+    console.error('Take discard error:', e);
+    appendLog('Take discard failed: ' + e.message);
+  }
 }
 
 async function discardSelected(){
@@ -526,31 +544,36 @@ async function discardSelected(){
   const idx = parseInt(sel.dataset.idx,10);
   const base = `games/${currentGameId}`;
   const gameRef = db.ref(base);
-  const res = await gameRef.transaction(curr=>{
-    if(!curr) return;
-    if(!curr.hands || !curr.hands['slot'+localSlotIndex]) return;
-    const hand = curr.hands['slot'+localSlotIndex];
-    if(idx <0 || idx >= hand.length) return;
-    const card = hand.splice(idx,1)[0];
-    curr.discard = curr.discard || [];
-    curr.discard.push(card);
-    curr.turnIndex = ( (curr.turnIndex || 0) + 1 ) % (curr.settings.playersNeeded || 4);
-    curr.log = curr.log || [];
-    curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' discarded ' + card});
-    for(let s=0;s<(curr.settings.playersNeeded||4);s++){
-      const h = curr.hands['slot'+s] || [];
-      const tens = h.filter(c=>c.startsWith('10')).length;
-      if(tens === 4){
-        curr.log.push({t:Date.now(), msg: 'MINDI! Slot '+s+' has all four 10s'});
-        curr.settings.started = false;
-        curr.winner = s;
-        break;
+  try {
+    const res = await gameRef.transaction(function(curr){
+      if(!curr) return;
+      if(!curr.hands || !curr.hands['slot'+localSlotIndex]) return;
+      const hand = curr.hands['slot'+localSlotIndex];
+      if(idx <0 || idx >= hand.length) return;
+      const card = hand.splice(idx,1)[0];
+      curr.discard = curr.discard || [];
+      curr.discard.push(card);
+      curr.turnIndex = ( (curr.turnIndex || 0) + 1 ) % (curr.settings.playersNeeded || 4);
+      curr.log = curr.log || [];
+      curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' discarded ' + card});
+      for(let s=0;s<(curr.settings.playersNeeded||4);s++){
+        const h = curr.hands['slot'+s] || [];
+        const tens = h.filter(c=>c.startsWith('10')).length;
+        if(tens === 4){
+          curr.log.push({t:Date.now(), msg: 'MINDI! Slot '+s+' has all four 10s'});
+          curr.settings.started = false;
+          curr.winner = s;
+          break;
+        }
       }
-    }
-    return curr;
-  }, {applyLocally:false});
-  if(res.committed) appendLog('Discarded card and advanced turn.');
-  else appendLog('Discard failed due to concurrency.');
+      return curr;
+    });
+    if(res.committed) appendLog('Discarded card and advanced turn.');
+    else appendLog('Discard failed due to concurrency.');
+  } catch(e) {
+    console.error('Discard error:', e);
+    appendLog('Discard failed: ' + e.message);
+  }
 }
 
 document.getElementById('drawBtn').addEventListener('click', ()=> {
