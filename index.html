@@ -12,142 +12,108 @@
   header{display:flex;align-items:center;justify-content:space-between;gap:12px}
   h1{margin:0;font-size:1.3rem}
   .panel{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:14px}
-  .home-grid{display:flex;gap:12px;flex-wrap:wrap}
-  .btn{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
-  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted)}
+  .home-grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+  .btn{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer;color:#000}
+  .btn:hover{opacity:0.9}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--muted)}
   .muted{color:var(--muted)}
   .small{font-size:.9rem}
   .game-area{display:flex;gap:16px;flex-wrap:wrap}
   .col{flex:1;min-width:260px}
-  .hand{display:flex;gap:6px;flex-wrap:wrap}
-  .card{width:64px;height:92px;border-radius:6px;background:var(--card);color:#0b1220;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 10px rgba(2,6,23,0.4);cursor:pointer}
+  .hand{display:flex;gap:6px;flex-wrap:wrap;min-height:100px;padding:10px;background:rgba(255,255,255,0.02);border-radius:10px}
+  .card{width:64px;height:92px;border-radius:6px;background:var(--card);color:#0b1220;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 10px rgba(2,6,23,0.4);cursor:pointer;user-select:none}
   .card.red{color:#b91c1c}
-  .card.selected{border:3px solid #f6c85f;transform:translateY(-5px)}
+  .card.selected{border:3px solid #f6c85f;transform:translateY(-10px);box-shadow: 0 10px 20px rgba(246,200,95,0.3)}
   .table{display:flex;gap:12px;align-items:center}
-  #log{height:140px;overflow:auto;background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;font-size:0.9rem}
-  input, select{background:transparent;border:1px solid rgba(255,255,255,0.06);color:white;padding:8px;border-radius:8px}
+  #log{height:140px;overflow:auto;background:rgba(0,0,0,0.2);padding:8px;border-radius:8px;font-size:0.85rem;display:flex;flex-direction:column-reverse}
+  input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;padding:10px;border-radius:8px;outline:none}
   .players-grid{display:flex;gap:6px;flex-wrap:wrap}
-  .slot{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);min-width:130px}
-  footer{margin-top:14px;color:var(--muted);font-size:.85rem;display:flex;justify-content:space-between;align-items:center}
-  .center{display:flex;align-items:center;gap:8px}
-  @media (max-width:880px){ .game-area{flex-direction:column} }
+  .slot{padding:8px;border-radius:8px;background:rgba(255,255,255,0.05);min-width:130px;border:1px solid transparent}
+  .slot.active-turn{border-color:var(--accent);background:rgba(246,200,95,0.1)}
+  footer{margin-top:20px;color:var(--muted);font-size:.85rem;text-align:center}
+  .hidden{display:none !important}
 </style>
 </head>
 <body>
+
 <div class="wrap">
   <header>
     <div>
-      <h1>Mindi Multiplayer (Firebase Realtime)</h1>
-      <div class="muted small">Create or join a live game — free hosting via GitHub Pages + Firebase</div>
+      <h1>Mindi Multiplayer</h1>
+      <div class="muted small">Realtime Card Game</div>
     </div>
-    <div class="center">
-      <button id="homeBtn" class="btn secondary">Home</button>
-      <button id="newRoomBtn" class="btn">New Game</button>
-    </div>
+    <button id="leaveBtn" class="btn secondary hidden">Leave Game</button>
   </header>
 
-  <div id="mainArea" class="panel">
-    <!-- Home Screen -->
+  <div class="panel">
     <div id="homeScreen">
-      <h3>Choose player count</h3>
+      <h3>Host a New Game</h3>
+      <input id="hostName" placeholder="Your Name" style="margin-bottom:10px; width:200px" /><br>
       <div class="home-grid">
-        <div>
-          <button class="btn" data-players="4">4 Players</button>
-          <div class="muted small">Uses 1 deck, REMOVE all 2s</div>
-        </div>
-        <div>
-          <button class="btn" data-players="6">6 Players</button>
-          <div class="muted small">Uses 1 deck, REMOVE all 2s</div>
-        </div>
-        <div>
-          <button class="btn" data-players="8">8 Players</button>
-          <div class="muted small">Uses 1 deck with 2s included</div>
-        </div>
+        <button class="btn" onclick="setupNewGame(4)">4 Players</button>
+        <button class="btn" onclick="setupNewGame(6)">6 Players</button>
+        <button class="btn" onclick="setupNewGame(8)">8 Players</button>
       </div>
 
-      <hr style="margin:14px 0;border:0;border-top:1px solid rgba(255,255,255,0.04)">
+      <hr style="margin:20px 0; border:0; border-top:1px solid rgba(255,255,255,0.1)">
 
-      <h4>Join existing game</h4>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="joinCode" placeholder="Enter game code (e.g. X7A2P9)" />
-        <input id="playerName" placeholder="Your name (optional)" />
+      <h3>Join Existing</h3>
+      <div style="display:flex;gap:8px">
+        <input id="joinName" placeholder="Your Name" />
+        <input id="joinCode" placeholder="Game Code" style="text-transform:uppercase" />
         <button id="joinBtn" class="btn">Join</button>
       </div>
-
-      <div style="margin-top:10px" class="muted small">Tip: share the game code with friends — they will join the same live game.</div>
     </div>
 
-    <!-- Game Screen -->
-    <div id="gameScreen" style="display:none">
-      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div id="gameScreen" class="hidden">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px">
         <div>
-          <div><strong>Game:</strong> <span id="gameCodeDisplay">—</span></div>
-          <div class="muted small">Players needed: <span id="playersNeeded">—</span></div>
-          <div class="muted small">Your slot: <span id="yourSlot">—</span></div>
+          <div style="font-size:1.2rem">Room: <strong id="gameCodeDisplay" style="color:var(--accent)">---</strong></div>
+          <div class="muted small">Slot: <span id="yourSlot">?</span> | Status: <span id="statusText">Waiting...</span></div>
         </div>
-        <div class="center">
-          <div class="muted">Status: <strong id="statusText">—</strong></div>
-          <button id="startBtn" class="btn secondary">Start Game</button>
-        </div>
+        <button id="startBtn" class="btn">Start Game</button>
       </div>
 
-      <div class="game-area" style="margin-top:12px">
+      <div class="game-area">
         <div class="col panel">
           <h4>Table</h4>
-          <div class="table" style="margin-bottom:10px">
-            <div id="deck" class="card" style="width:80px;height:110px">Deck</div>
-            <div id="discard" class="card" style="width:80px;height:110px">Discard</div>
-            <div class="muted">Draws left: <span id="deckCount">0</span></div>
+          <div class="table">
+            <div id="deck" class="card" style="background:#2c3e50; color:white">Deck</div>
+            <div id="discardArea"></div>
+            <div class="muted small">Deck: <span id="deckCount">0</span></div>
           </div>
 
-          <div>
-            <h5>Players</h5>
-            <div id="playersGrid" class="players-grid"></div>
-          </div>
+          <h5>Players</h5>
+          <div id="playersGrid" class="players-grid"></div>
 
-          <div style="margin-top:8px">
-            <h5>Log</h5>
-            <div id="log"></div>
-          </div>
+          <h5>Log</h5>
+          <div id="log"></div>
         </div>
 
         <div class="col panel">
           <h4>Your Hand</h4>
           <div id="hand" class="hand"></div>
-
-          <div style="margin-top:10px" class="center">
+          
+          <div style="margin-top:15px; display:flex; gap:10px">
             <button id="drawBtn" class="btn">Draw</button>
             <button id="takeDiscardBtn" class="btn secondary">Take Discard</button>
-            <button id="discardBtn" class="btn secondary">Discard Selected</button>
-          </div>
-
-          <div style="margin-top:12px">
-            <h5>Controls</h5>
-            <div class="muted small">Click a card in your hand to select it for discard. Use Draw / Take Discard then Discard Selected to end your turn.</div>
+            <button id="discardBtn" class="btn" style="background:#e74c3c; color:white">Play Selected</button>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Firebase config / status area -->
-    <div style="margin-top:12px" class="muted small">
-      <div>Firebase Status: <span id="fbStatus">Not initialized</span></div>
-      <div style="margin-top:6px">When the page is closed, your player slot will be marked disconnected but still stays until owner clears or room times out.</div>
-    </div>
   </div>
 
   <footer>
-    <div class="muted">Built with Firebase Realtime Database — free to run. Host on GitHub Pages.</div>
-    <div class="muted">Tip: use Chrome/Edge for best realtime behavior.</div>
+    Firebase Status: <span id="fbStatus">Connecting...</span>
   </footer>
 </div>
 
-<!-- Firebase compat (simpler for quick copy/paste) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-/* ---------- CONFIG: Your Firebase config ---------- */
+// 1. DATABASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",
   authDomain: "mindi-game-93625.firebaseapp.com",
@@ -157,439 +123,212 @@ const firebaseConfig = {
   messagingSenderId: "432897237762",
   appId: "1:432897237762:web:c48c42f7bd63bfeab7d81b"
 };
-/* ------------------------------------------------------------ */
 
-if(!firebaseConfig.databaseURL){
-  document.getElementById('fbStatus').textContent = 'Missing firebaseConfig.databaseURL — paste your config in the file.';
-  console.warn('Please paste your Firebase config (with databaseURL) into the firebaseConfig variable.');
-}
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+document.getElementById('fbStatus').textContent = "Connected";
 
-// init firebase
-let app, db;
-try{
-  app = firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  document.getElementById('fbStatus').textContent = 'Initialized';
-} catch(e){
-  console.error('Firebase init failed', e);
-  document.getElementById('fbStatus').textContent = 'Init failed: see console';
-}
+// 2. STATE
+let localId = 'u_' + Math.random().toString(36).substring(2, 9);
+let currentGameCode = null;
+let mySlotIndex = null;
+let myName = "Player";
 
-/* ---------- Basic Mindi multiplayer logic ---------- */
-
+// 3. LOGIC UTILS
 const ALPHANUM = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-function makeCode(len=6){
-  let out='';
-  for(let i=0;i<len;i++) out += ALPHANUM[Math.floor(Math.random()*ALPHANUM.length)];
-  return out;
+function generateCode() {
+  let res = '';
+  for(let i=0; i<6; i++) res += ALPHANUM[Math.floor(Math.random()*ALPHANUM.length)];
+  return res;
 }
 
-const SUITS = ['S','H','D','C'];
-const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-
-function makeDeck(includeTwos=true){
-  const deck=[];
-  for(const s of SUITS){
-    for(const r of RANKS){
-      if(!includeTwos && r==='2') continue;
-      deck.push(r+s);
-    }
-  }
-  shuffleArray(deck);
-  return deck;
-}
-function shuffleArray(a){
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
+function makeDeck(includeTwos) {
+  const suits = ['S','H','D','C'];
+  const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  let deck = [];
+  suits.forEach(s => ranks.forEach(r => {
+    if(!includeTwos && r === '2') return;
+    deck.push(r+s);
+  }));
+  return deck.sort(() => Math.random() - 0.5);
 }
 
-/* UI */
-const homeScreen = document.getElementById('homeScreen');
-const gameScreen = document.getElementById('gameScreen');
-const gameCodeDisplay = document.getElementById('gameCodeDisplay');
-const playersNeededEl = document.getElementById('playersNeeded');
-const playersGrid = document.getElementById('playersGrid');
-const handDiv = document.getElementById('hand');
-const deckEl = document.getElementById('deck');
-const discardEl = document.getElementById('discard');
-const deckCount = document.getElementById('deckCount');
-const statusText = document.getElementById('statusText');
-const logDiv = document.getElementById('log');
-const yourSlotEl = document.getElementById('yourSlot');
-const startBtn = document.getElementById('startBtn');
-const fbStatusEl = document.getElementById('fbStatus');
-
-let localPlayerId = 'p_' + Math.random().toString(36).slice(2,9);
-let localName = '';
-let currentGameId = null;
-let localSlotIndex = null;
-let playersNeeded = null;
-
-function appendLog(msg){
-  const t = new Date().toLocaleTimeString();
-  logDiv.innerHTML = `<div style="margin-bottom:6px"><span class="muted small">${t}</span> — ${msg}</div>` + logDiv.innerHTML;
-}
-
-/* Home buttons */
-document.querySelectorAll('[data-players]').forEach(btn=>{
-  btn.addEventListener('click', async (ev)=>{
-    const p = parseInt(btn.getAttribute('data-players'),10);
-    await createGame(p);
-  });
-});
-document.getElementById('joinBtn').addEventListener('click', ()=> {
-  const code = document.getElementById('joinCode').value.trim().toUpperCase();
-  const name = document.getElementById('playerName').value.trim() || 'Player';
-  if(!code) return alert('Enter room code');
-  localName = name;
-  joinGame(code);
-});
-document.getElementById('newRoomBtn').addEventListener('click', ()=> {
-  homeScreen.style.display='block';
-  gameScreen.style.display='none';
-});
-document.getElementById('homeBtn').addEventListener('click', ()=> {
-  homeScreen.style.display='block';
-  gameScreen.style.display='none';
-});
-
-startBtn.addEventListener('click', ()=> {
-  if(!currentGameId) return;
-  startGame(currentGameId);
-});
-
-/* Create a new game in Realtime DB */
-async function createGame(playerCount){
-  const code = makeCode(6);
-  currentGameId = code;
-  playersNeeded = playerCount;
-  const includeTwos = (playerCount === 8);
-  const path = `games/${currentGameId}`;
-  const settings = {
-    playersNeeded: playerCount,
-    includeTwos: includeTwos,
-    createdAt: Date.now(),
-    started: false
-  };
-  const playersObj = {};
-  for(let i=0;i<playerCount;i++){
-    playersObj['slot'+i] = { name: null, id: null, connected:false };
-  }
-  const initial = {
-    settings,
-    players: playersObj,
+// 4. CORE ACTIONS
+async function setupNewGame(num) {
+  myName = document.getElementById('hostName').value || "Host";
+  const code = generateCode();
+  const gameData = {
+    settings: { playersNeeded: num, started: false, includeTwos: (num === 8) },
+    players: {},
+    turn: 0,
     deck: [],
     discard: [],
-    hands: {},
-    turnIndex: 0,
-    log: []
+    log: [{msg: `Game created by ${myName}`, t: Date.now()}]
   };
-  await db.ref(path).set(initial);
-  appendLog(`Created room ${currentGameId} — players: ${playerCount}`);
-  localName = prompt('Your display name (optional)') || 'Host';
-  await joinGame(currentGameId);
+  
+  for(let i=0; i<num; i++) gameData.players['slot'+i] = {id: null, name: null};
+
+  await db.ref('games/' + code).set(gameData);
+  joinRoom(code, myName);
 }
 
-/* Join existing */
-async function joinGame(code){
-  code = code.trim().toUpperCase();
-  const path = `games/${code}`;
-  const snap = await db.ref(path + '/settings').get();
-  if(!snap.exists()){
-    return alert('Game not found: ' + code);
-  }
-  const settings = snap.val();
-  playersNeeded = settings.playersNeeded;
-  let joinedSlot = null;
-  for(let i=0;i<playersNeeded;i++){
-    const slotRef = db.ref(path + '/players/slot'+i);
-    try {
-      const res = await slotRef.transaction(function(curr){
-        if(curr === null) return curr;
-        if(!curr.id){
-          return { name: localName || ('Player'+(i+1)), id: localPlayerId, connected: true };
-        }
-        return;
-      });
-      if(res.committed && res.snapshot && res.snapshot.val() && res.snapshot.val().id === localPlayerId){
-        joinedSlot = i;
-        break;
-      }
-    } catch(e) {
-      console.error('Transaction error:', e);
+async function joinRoom(code, name) {
+  code = code.toUpperCase();
+  const snap = await db.ref(`games/${code}`).get();
+  if(!snap.exists()) return alert("Room not found");
+  
+  const data = snap.val();
+  let assignedSlot = -1;
+
+  // Find empty slot
+  for(let i=0; i<data.settings.playersNeeded; i++) {
+    if(!data.players['slot'+i].id) {
+      assignedSlot = i;
+      break;
     }
-  }
-  if(joinedSlot === null){
-    const playersSnap = await db.ref(path + '/players').get();
-    const playersVal = playersSnap.val();
-    for(let i=0;i<playersNeeded;i++){
-      const p = playersVal['slot'+i];
-      if(!p || !p.connected || !p.id){
-        await db.ref(path + '/players/slot'+i).set({ name: localName || ('Player'+(i+1)), id: localPlayerId, connected: true });
-        joinedSlot = i;
-        break;
-      }
-    }
-  }
-  if(joinedSlot === null){
-    return alert('Room full. Please join another room or create a new game.');
   }
 
-  currentGameId = code;
-  localSlotIndex = joinedSlot;
-  yourSlotEl.textContent = 'Slot ' + joinedSlot;
-  appendLog('Joined room ' + code + ' as slot ' + joinedSlot);
-  showGameScreen();
-  bindGameListeners(currentGameId);
-  db.ref(`games/${currentGameId}/log`).push({t:Date.now(), msg: (localName||'Player') + ' joined (slot '+joinedSlot+')'});
+  if(assignedSlot === -1) return alert("Room Full");
 
-  window.addEventListener('beforeunload', ()=> {
-    if(currentGameId !== null){
-      db.ref(`games/${currentGameId}/players/slot${localSlotIndex}`).update({ connected:false });
-    }
-  });
+  await db.ref(`games/${code}/players/slot${assignedSlot}`).set({id: localId, name: name});
+  
+  currentGameCode = code;
+  mySlotIndex = assignedSlot;
+  myName = name;
+
+  document.getElementById('homeScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  document.getElementById('leaveBtn').classList.remove('hidden');
+  
+  listenToGame(code);
 }
 
-function showGameScreen(){
-  homeScreen.style.display='none';
-  gameScreen.style.display='block';
-  gameCodeDisplay.textContent = currentGameId || '—';
-  playersNeededEl.textContent = playersNeeded || '—';
-  statusText.textContent = 'Waiting';
-}
-
-let gameListener = null;
-function bindGameListeners(gameId){
-  if(gameListener) gameListener.off();
-  const ref = db.ref(`games/${gameId}`);
-  gameListener = ref;
-  ref.on('value', snap=>{
+function listenToGame(code) {
+  db.ref(`games/${code}`).on('value', snap => {
     const data = snap.val();
     if(!data) return;
-    document.getElementById('gameCodeDisplay').textContent = gameId;
-    playersNeededEl.textContent = data.settings.playersNeeded;
-    deckCount.textContent = (data.deck && data.deck.length) || 0;
-    discardEl.innerHTML = (data.discard && data.discard.length)? cardHTML(data.discard[data.discard.length-1]) : 'Empty';
-    statusText.textContent = data.settings.started ? `Started — turn: ${data.turnIndex}` : 'Waiting to start';
-    renderPlayers(data.players, data.hands);
-    const yourHand = (data.hands && data.hands['slot'+localSlotIndex]) || [];
-    renderHand(yourHand);
-    renderLog(data.log || []);
+
+    // UI Updates
+    document.getElementById('gameCodeDisplay').textContent = code;
+    document.getElementById('yourSlot').textContent = mySlotIndex;
+    document.getElementById('statusText').textContent = data.settings.started ? "In Progress" : "Lobby";
+    document.getElementById('deckCount').textContent = data.deck ? data.deck.length : 0;
+    
+    // Start Button Visibility
+    document.getElementById('startBtn').style.display = (mySlotIndex === 0 && !data.settings.started) ? 'block' : 'none';
+
+    // Render Players
+    const pGrid = document.getElementById('playersGrid');
+    pGrid.innerHTML = '';
+    for(let i=0; i<data.settings.playersNeeded; i++) {
+      const p = data.players['slot'+i];
+      const div = document.createElement('div');
+      div.className = `slot ${data.turn === i ? 'active-turn' : ''}`;
+      div.innerHTML = `<strong>${p.name || 'Waiting...'}</strong><br><small>Cards: ${(data.hands && data.hands['slot'+i]) ? data.hands['slot'+i].length : 0}</small>`;
+      pGrid.appendChild(div);
+    }
+
+    // Render Discard
+    const disc = document.getElementById('discardArea');
+    if(data.discard && data.discard.length > 0) {
+      const top = data.discard[data.discard.length-1];
+      disc.innerHTML = `<div class="card ${top.includes('H') || top.includes('D') ? 'red' : ''}">${top.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣')}</div>`;
+    } else {
+      disc.innerHTML = '<div class="card muted" style="border:1px dashed #444; background:transparent">Empty</div>';
+    }
+
+    // Render Hand
+    const handDiv = document.getElementById('hand');
+    handDiv.innerHTML = '';
+    const myCards = (data.hands && data.hands['slot'+mySlotIndex]) || [];
+    myCards.forEach((c, idx) => {
+      const cardEl = document.createElement('div');
+      cardEl.className = `card ${c.includes('H') || c.includes('D') ? 'red' : ''}`;
+      cardEl.textContent = c.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣');
+      cardEl.onclick = () => {
+        document.querySelectorAll('.card').forEach(el => el.classList.remove('selected'));
+        cardEl.classList.add('selected');
+        cardEl.dataset.cardIdx = idx;
+      };
+      handDiv.appendChild(cardEl);
+    });
+
+    // Render Log
+    const logDiv = document.getElementById('log');
+    logDiv.innerHTML = (data.log || []).map(l => `<div><small class="muted">${new Date(l.t).toLocaleTimeString()}</small> ${l.msg}</div>`).join('');
   });
 }
 
-function renderPlayers(playersObj, hands){
-  playersGrid.innerHTML = '';
-  for(let i=0;i<playersNeeded;i++){
-    const p = playersObj['slot'+i] || {name: null, id:null, connected:false};
-    const cardCount = (hands && hands['slot'+i]) ? hands['slot'+i].length : 0;
-    const el = document.createElement('div');
-    el.className = 'slot';
-    el.innerHTML = `<div><strong>${p.name || ('Slot '+i)}</strong> ${p.connected?'<span class="muted">●</span>':'<span class="muted">○</span>'}</div>
-                    <div class="muted small">Cards: ${cardCount}</div>
-                    <div class="muted small">Slot: ${i}</div>`;
-    playersGrid.appendChild(el);
-  }
-}
-
-function renderHand(cards){
-  handDiv.innerHTML = '';
-  for(let i=0;i<cards.length;i++){
-    const code = cards[i];
-    const el = document.createElement('div');
-    const isRed = code.endsWith('H') || code.endsWith('D');
-    el.className = 'card' + (isRed ? ' red' : '');
-    el.textContent = pretty(code);
-    el.dataset.idx = i;
-    el.addEventListener('click', ()=> {
-      const sel = handDiv.querySelector('.selected');
-      if(sel) sel.classList.remove('selected');
-      if(sel !== el) el.classList.add('selected');
-    });
-    handDiv.appendChild(el);
-  }
-}
-
-function pretty(code){
-  const r = code.slice(0, code.length-1);
-  const s = code.slice(-1);
-  const suit = s==='H'?'♥':s==='D'?'♦':s==='S'?'♠':'♣';
-  return r + suit;
-}
-function cardHTML(code){
-  return `<div class="card ${code.endsWith('H')||code.endsWith('D') ? 'red':''}" style="width:80px;height:110px">${pretty(code)}</div>`;
-}
-
-function renderLog(logArr){
-  logDiv.innerHTML = '';
-  const rev = (logArr || []).slice(-200).reverse();
-  for(const item of rev){
-    const time = item.t ? new Date(item.t).toLocaleTimeString() : '';
-    logDiv.innerHTML += `<div style="margin-bottom:6px"><span class="muted small">${time}</span> — ${item.msg}</div>`;
-  }
-}
-
-async function startGame(gameId){
-  const base = `games/${gameId}`;
-  const settingsSnap = await db.ref(base + '/settings').get();
-  if(!settingsSnap.exists()) return alert('Game not found');
-  const settings = settingsSnap.val();
-  if(settings.started) return alert('Game already started');
-  const deck = makeDeck(settings.includeTwos);
+// 5. GAMEPLAY ACTIONS
+document.getElementById('startBtn').onclick = async () => {
+  const snap = await db.ref(`games/${currentGameCode}`).get();
+  const data = snap.val();
+  const deck = makeDeck(data.settings.includeTwos);
   const hands = {};
-  const playersNeeded = settings.playersNeeded;
-  const cardsPerPlayer = 5;
-  for(let i=0;i<playersNeeded;i++){
-    hands['slot'+i] = [];
-    for(let k=0;k<cardsPerPlayer;k++){
-      hands['slot'+i].push(deck.pop());
-    }
+  
+  for(let i=0; i<data.settings.playersNeeded; i++) {
+    hands['slot'+i] = deck.splice(0, 5);
   }
-  const discard = [deck.pop()];
-  await db.ref(base).update({
+
+  await db.ref(`games/${currentGameCode}`).update({
+    'settings/started': true,
     deck: deck,
-    discard: discard,
     hands: hands,
-    turnIndex: 0,
-    'settings/started': true
+    discard: [deck.pop()],
+    turn: 0
   });
-  await db.ref(base + '/log').push({t:Date.now(), msg: 'Game started'});
-  appendLog('Game started and cards dealt.');
-}
+  db.ref(`games/${currentGameCode}/log`).push({msg: "Game Started!", t: Date.now()});
+};
 
-async function drawFromDeckAtomic(){
-  const base = `games/${currentGameId}`;
-  const gameRef = db.ref(base);
-  try {
-    const res = await gameRef.transaction(function(curr){
-      if(!curr) return;
-      if(!curr.deck || curr.deck.length === 0){
-        return;
-      }
-      const deckCopy = curr.deck.slice(0);
-      const card = deckCopy.pop();
-      curr.deck = deckCopy;
-      if(!curr.hands) curr.hands = {};
-      if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];
-      curr.hands['slot'+localSlotIndex].push(card);
-      if(!curr.log) curr.log = [];
-      curr.log.push({t:Date.now(), msg: (localName || ('Player'+localSlotIndex)) + ' drew from deck'});
-      return curr;
-    });
-    if(!res.committed){
-      appendLog('Draw failed (deck empty or concurrency). Attempting reshuffle.');
-      await reshuffleFromDiscard();
-      return;
-    }
-    appendLog('Drew a card from deck.');
-  } catch(e) {
-    console.error('Draw error:', e);
-    appendLog('Draw failed: ' + e.message);
-  }
-}
+document.getElementById('drawBtn').onclick = async () => {
+  const snap = await db.ref(`games/${currentGameCode}`).get();
+  const data = snap.val();
+  if(data.turn !== mySlotIndex) return alert("Not your turn");
+  if(!data.deck || data.deck.length === 0) return alert("Deck empty");
 
-async function reshuffleFromDiscard(){
-  const base = `games/${currentGameId}`;
-  const gameRef = db.ref(base);
-  try {
-    const res = await gameRef.transaction(function(curr){
-      if(!curr) return;
-      if(!curr.discard || curr.discard.length <= 1) return;
-      const top = curr.discard.pop();
-      const newDeck = curr.discard.slice(0);
-      for(let i=newDeck.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
-      }
-      curr.deck = newDeck;
-      curr.discard = [top];
-      curr.log = curr.log || [];
-      curr.log.push({t:Date.now(), msg: 'Deck reshuffled from discard'});
-      return curr;
-    });
-    if(res.committed) appendLog('Deck reshuffled from discard.');
-  } catch(e) {
-    console.error('Reshuffle error:', e);
-  }
-}
+  const card = data.deck.pop();
+  const myCards = data.hands['slot'+mySlotIndex] || [];
+  myCards.push(card);
 
-async function takeDiscard(){
-  const base = `games/${currentGameId}`;
-  const gameRef = db.ref(base);
-  try {
-    const res = await gameRef.transaction(function(curr){
-      if(!curr) return;
-      if(!curr.discard || curr.discard.length === 0) return;
-      const card = curr.discard.pop();
-      if(!curr.hands) curr.hands = {};
-      if(!curr.hands['slot'+localSlotIndex]) curr.hands['slot'+localSlotIndex] = [];
-      curr.hands['slot'+localSlotIndex].push(card);
-      curr.log = curr.log || [];
-      curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' took discard ' + card});
-      return curr;
-    });
-    if(res.committed) appendLog('Took discard into hand.');
-    else appendLog('Take discard failed (maybe empty or concurrency).');
-  } catch(e) {
-    console.error('Take discard error:', e);
-    appendLog('Take discard failed: ' + e.message);
-  }
-}
+  await db.ref(`games/${currentGameCode}`).update({
+    deck: data.deck,
+    [`hands/slot${mySlotIndex}`]: myCards
+  });
+  db.ref(`games/${currentGameCode}/log`).push({msg: `${myName} drew a card`, t: Date.now()});
+};
 
-async function discardSelected(){
-  const sel = handDiv.querySelector('.card.selected');
-  if(!sel) return alert('Select a card in your hand to discard');
-  const idx = parseInt(sel.dataset.idx,10);
-  const base = `games/${currentGameId}`;
-  const gameRef = db.ref(base);
-  try {
-    const res = await gameRef.transaction(function(curr){
-      if(!curr) return;
-      if(!curr.hands || !curr.hands['slot'+localSlotIndex]) return;
-      const hand = curr.hands['slot'+localSlotIndex];
-      if(idx <0 || idx >= hand.length) return;
-      const card = hand.splice(idx,1)[0];
-      curr.discard = curr.discard || [];
-      curr.discard.push(card);
-      curr.turnIndex = ( (curr.turnIndex || 0) + 1 ) % (curr.settings.playersNeeded || 4);
-      curr.log = curr.log || [];
-      curr.log.push({t:Date.now(), msg: (localName||('Player'+localSlotIndex)) + ' discarded ' + card});
-      for(let s=0;s<(curr.settings.playersNeeded||4);s++){
-        const h = curr.hands['slot'+s] || [];
-        const tens = h.filter(c=>c.startsWith('10')).length;
-        if(tens === 4){
-          curr.log.push({t:Date.now(), msg: 'MINDI! Slot '+s+' has all four 10s'});
-          curr.settings.started = false;
-          curr.winner = s;
-          break;
-        }
-      }
-      return curr;
-    });
-    if(res.committed) appendLog('Discarded card and advanced turn.');
-    else appendLog('Discard failed due to concurrency.');
-  } catch(e) {
-    console.error('Discard error:', e);
-    appendLog('Discard failed: ' + e.message);
-  }
-}
+document.getElementById('discardBtn').onclick = async () => {
+  const sel = document.querySelector('.card.selected');
+  if(!sel) return alert("Select a card first");
+  
+  const snap = await db.ref(`games/${currentGameCode}`).get();
+  const data = snap.val();
+  if(data.turn !== mySlotIndex) return alert("Not your turn");
 
-document.getElementById('drawBtn').addEventListener('click', ()=> {
-  if(!currentGameId) return alert('Join a game first');
-  drawFromDeckAtomic();
-});
-document.getElementById('takeDiscardBtn').addEventListener('click', ()=> {
-  if(!currentGameId) return alert('Join a game first');
-  takeDiscard();
-});
-document.getElementById('discardBtn').addEventListener('click', ()=> {
-  if(!currentGameId) return alert('Join a game first');
-  discardSelected();
-});
+  const idx = parseInt(sel.dataset.cardIdx);
+  const myCards = data.hands['slot'+mySlotIndex];
+  const card = myCards.splice(idx, 1)[0];
+  const discard = data.discard || [];
+  discard.push(card);
 
-appendLog('Client ready. Create a new game to start.');
+  const nextTurn = (data.turn + 1) % data.settings.playersNeeded;
+
+  await db.ref(`games/${currentGameCode}`).update({
+    [`hands/slot${mySlotIndex}`]: myCards,
+    discard: discard,
+    turn: nextTurn
+  });
+  db.ref(`games/${currentGameCode}/log`).push({msg: `${myName} played ${card}`, t: Date.now()});
+};
+
+document.getElementById('joinBtn').onclick = () => {
+  const code = document.getElementById('joinCode').value;
+  const name = document.getElementById('joinName').value || "Player";
+  if(code) joinRoom(code, name);
+};
+
+document.getElementById('leaveBtn').onclick = () => location.reload();
+
 </script>
 </body>
 </html>
