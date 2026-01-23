@@ -5,35 +5,24 @@
 <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" href="data:,">
-<title>Mindi Multiplayer</title>
+<title>Mindi Multiplayer - Global Test</title>
 <style>
   :root{--bg:#071126;--card:#fff;--muted:#9aa6b2;--accent:#f6c85f}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-    background:linear-gradient(180deg,#071126 0%, #07263a 100%);color:white;min-height:100vh}
+  body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(180deg,#071126 0%, #07263a 100%);color:white;min-height:100vh}
   .wrap{max-width:1100px;margin:0 auto;padding:18px;}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-  h1{margin:0;font-size:1.3rem}
-  .panel{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:14px}
-  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .panel{background:rgba(255,255,255,0.03);padding:20px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:14px}
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; background: rgba(0,0,0,0.3); }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
   .dot.online { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
-  .dot.offline { background: #f87171; }
-  .home-grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
-  .btn{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer;color:#000;transition: 0.2s;}
-  .btn:hover{transform: translateY(-2px); opacity:0.9}
-  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--muted)}
-  .muted{color:var(--muted)}
-  .game-area{display:flex;gap:16px;flex-wrap:wrap}
-  .col{flex:1;min-width:280px}
-  .hand{display:flex;gap:6px;flex-wrap:wrap;min-height:110px;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;border: 1px dashed rgba(255,255,255,0.1)}
-  .card{width:64px;height:92px;border-radius:6px;background:var(--card);color:#0b1220;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;box-shadow:0 4px 8px rgba(0,0,0,0.3);cursor:pointer;user-select:none;font-size: 1.1rem;}
+  .btn{background:var(--accent);border:none;padding:12px 24px;border-radius:10px;font-weight:700;cursor:pointer;color:#000;}
+  .btn:disabled{background:#555;cursor:not-allowed}
+  .card{width:64px;height:92px;border-radius:6px;background:var(--card);color:#0b1220;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;font-size: 1.1rem;box-shadow:0 4px 8px rgba(0,0,0,0.3)}
   .card.red{color:#b91c1c}
-  .card.selected{border:3px solid var(--accent);transform:translateY(-10px);box-shadow: 0 8px 15px rgba(246,200,95,0.4)}
-  .table{display:flex;gap:12px;align-items:center;margin: 15px 0;}
-  #log{height:120px;overflow:auto;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;font-size:0.8rem;display:flex;flex-direction:column-reverse;border: 1px solid rgba(255,255,255,0.05)}
-  input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);color:white;padding:10px;border-radius:8px;outline:none}
-  .players-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom: 15px;}
-  .slot{padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);min-width:120px;border:2px solid transparent}
+  .card.selected{border:3px solid var(--accent);transform:translateY(-10px)}
+  .hand{display:flex;gap:8px;flex-wrap:wrap;padding:15px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px dashed #444}
+  .players-grid{display:flex;gap:10px;margin-bottom:20px}
+  .slot{padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);flex:1;text-align:center;border:2px solid transparent}
   .slot.active-turn{border-color:var(--accent);background:rgba(246,200,95,0.1)}
   .hidden{display:none !important}
   .version-tag { text-align: center; margin-top: 50px; font-size: 5rem; font-weight: 900; color: #ff4444; opacity: 0.8; letter-spacing: 10px; }
@@ -43,75 +32,55 @@
 
 <div class="wrap">
   <header>
-    <div>
-      <h1>Mindi Multiplayer</h1>
-      <div class="status-pill">
-        <div id="statusDot" class="dot"></div>
-        <span id="statusLabel">Connecting...</span>
-      </div>
-    </div>
-    <button id="leaveBtn" class="btn secondary hidden" onclick="location.reload()">Leave Game</button>
+    <h1>Mindi Global Lobby</h1>
+    <div class="status-pill"><div id="statusDot" class="dot"></div><span id="statusLabel">Connecting...</span></div>
   </header>
 
   <div class="panel">
     <div id="homeScreen">
-      <h3>Host a New Game</h3>
-      <input id="hostName" placeholder="Your Display Name" style="width:240px; margin-bottom:12px" />
-      <div class="home-grid">
-        <button class="btn" onclick="createNewGame(4)">4 Players</button>
-        <button class="btn" onclick="createNewGame(6)">6 Players</button>
-        <button class="btn" onclick="createNewGame(8)">8 Players</button>
-      </div>
-      <hr style="margin:25px 0; border:0; border-top:1px solid rgba(255,255,255,0.1)">
-      <h3>Join Existing Game</h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input id="joinName" placeholder="Your Name" />
-        <input id="joinCode" placeholder="Code" style="text-transform:uppercase" />
-        <button id="joinBtn" class="btn">Join Game</button>
-      </div>
+      <h2>One-Click Play</h2>
+      <p class="muted">Click below to join the global 4-player game.</p>
+      <input id="hostName" placeholder="Enter Your Name" style="padding:10px; border-radius:8px; border:1px solid #444; background:#111; color:white; margin-bottom:15px; width:200px"/><br>
+      <button class="btn" onclick="enterGlobalGame()">Join Global Game (4 Players)</button>
+      <button class="btn" style="background:#e74c3c; color:white; margin-left:10px" onclick="resetGlobalGame()">Reset All Data</button>
     </div>
 
     <div id="gameScreen" class="hidden">
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px">
+      <div style="display:flex; justify-content:space-between; margin-bottom:20px">
         <div>
-          <div style="font-size:1.1rem">Room Code: <strong id="gameCodeDisplay" style="color:var(--accent)">---</strong></div>
-          <div class="muted small">Slot: <span id="yourSlotDisplay">?</span> | <span id="turnStatus">Waiting...</span></div>
+          <h3 id="turnStatus">Waiting for players...</h3>
+          <p class="muted">You are: <strong id="yourNameDisplay"></strong> (Slot <span id="yourSlotDisplay"></span>)</p>
         </div>
-        <button id="startBtn" class="btn hidden">Start Match</button>
+        <button id="startBtn" class="btn hidden" onclick="startMatch()">Start Match</button>
       </div>
-      <div class="game-area">
-        <div class="col">
-          <div class="table">
-            <div id="deck" class="card" style="background:#1e293b; color:#475569;">Deck</div>
-            <div id="discardArea"></div>
-            <div class="muted small">Deck: <span id="deckCount">0</span></div>
-          </div>
-          <h5>Players</h5>
-          <div id="playersGrid" class="players-grid"></div>
-          <h5>Log</h5>
-          <div id="log"></div>
+
+      <div class="players-grid" id="playersGrid"></div>
+
+      <div style="display:flex; gap:20px; flex-wrap:wrap">
+        <div style="flex:1">
+          <h4>Table</h4>
+          <div id="discardArea" style="margin-bottom:10px"></div>
+          <div id="log" style="font-size:0.8rem; height:100px; overflow:auto; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px"></div>
         </div>
-        <div class="col">
+        <div style="flex:1">
           <h4>Your Hand</h4>
           <div id="hand" class="hand"></div>
-          <div style="margin-top:20px; display:flex; gap:10px">
-            <button id="drawBtn" class="btn">Draw</button>
-            <button id="takeDiscardBtn" class="btn secondary">Take Discard</button>
-            <button id="discardBtn" class="btn">Play Card</button>
+          <div style="margin-top:15px; display:flex; gap:10px">
+            <button class="btn" onclick="drawCard()">Draw</button>
+            <button class="btn" onclick="playCard()">Play Selected</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="version-tag">MANANP</div>
+  <div class="version-tag">MANAN</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-// INITIALIZATION
 const firebaseConfig = {
   apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",
   authDomain: "mindi-game-93625.firebaseapp.com",
@@ -122,145 +91,154 @@ const firebaseConfig = {
   appId: "1:432897237762:web:c48c42f7bd63bfeab7d81b"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-let localId = 'u_' + Math.random().toString(36).substring(2, 9);
-let currentRoom = null;
+const gameRef = db.ref('global_match');
+let myId = 'u_' + Math.random().toString(36).substring(2, 7);
 let mySlot = null;
-let myDisplayName = "Player";
 
-// CONNECTION STATUS
-db.ref(".info/connected").on("value", (s) => {
+// Connection Monitor
+db.ref(".info/connected").on("value", s => {
   document.getElementById('statusDot').className = s.val() ? "dot online" : "dot offline";
   document.getElementById('statusLabel').textContent = s.val() ? "Live" : "Offline";
 });
 
-// GAME FUNCTIONS
-async function createNewGame(num) {
-  myDisplayName = document.getElementById('hostName').value.trim() || "Host";
-  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-  const initial = {
-    settings: { playersNeeded: num, started: false, includeTwos: (num === 8) },
+async function resetGlobalGame() {
+  if(!confirm("This will kick everyone out and clear the board. Proceed?")) return;
+  await gameRef.set({
+    started: false,
+    turn: 0,
     players: {
-      slot0: {id: null, name: null},
-      slot1: {id: null, name: null},
-      slot2: {id: null, name: null},
-      slot3: {id: null, name: null}
+      slot0: {id:null, name:null}, slot1: {id:null, name:null},
+      slot2: {id:null, name:null}, slot3: {id:null, name:null}
     },
-    turn: 0, deck: [], discard: [],
-    log: [{msg: `Created by ${myDisplayName}`, t: Date.now()}]
-  };
-  
-  // Add extra slots if needed
-  if (num > 4) for(let i=4; i<num; i++) initial.players['slot'+i] = {id: null, name: null};
-  
-  await db.ref('games/' + code).set(initial);
-  setTimeout(() => joinGame(code, myDisplayName), 800);
+    deck: [], discard: [], log: ["Game Reset"]
+  });
+  location.reload();
 }
 
-async function joinGame(code, name) {
-  code = code.toUpperCase().trim();
-  const snap = await db.ref(`games/${code}`).once('value');
-  if(!snap.exists()) return alert("Room not found");
-  const data = snap.val();
-  
-  let slot = -1;
-  for(let i=0; i<data.settings.playersNeeded; i++) {
-    const slotKey = 'slot' + i;
-    if(!data.players[slotKey] || !data.players[slotKey].id) { slot = i; break; }
+async function enterGlobalGame() {
+  const name = document.getElementById('hostName').value || "Player_" + myId.slice(-3);
+  const snap = await gameRef.once('value');
+  let data = snap.val();
+
+  // If game doesn't exist at all, create it
+  if (!data) {
+    await gameRef.set({
+      started: false, turn: 0,
+      players: { slot0:{id:null, name:null}, slot1:{id:null, name:null}, slot2:{id:null, name:null}, slot3:{id:null, name:null} }
+    });
+    data = (await gameRef.once('value')).val();
   }
+
+  // Find first empty slot
+  let slotToTake = -1;
+  for(let i=0; i<4; i++) {
+    if(!data.players['slot'+i].id) { slotToTake = i; break; }
+  }
+
+  if(slotToTake === -1) return alert("Game is currently full. Try resetting.");
+
+  mySlot = slotToTake;
+  await gameRef.child('players/slot' + mySlot).set({id: myId, name: name});
   
-  if(slot === -1) return alert("Room Full");
-  
-  await db.ref(`games/${code}/players/slot${slot}`).set({id: localId, name: name});
-  currentRoom = code; mySlot = slot; myDisplayName = name;
   document.getElementById('homeScreen').classList.add('hidden');
   document.getElementById('gameScreen').classList.remove('hidden');
-  document.getElementById('leaveBtn').classList.remove('hidden');
-  startListening(code);
+  document.getElementById('yourNameDisplay').textContent = name;
+  document.getElementById('yourSlotDisplay').textContent = mySlot;
+
+  listenToGame();
 }
 
-function startListening(code) {
-  db.ref(`games/${code}`).on('value', snap => {
+function listenToGame() {
+  gameRef.on('value', snap => {
     const data = snap.val();
-    if(!data || !data.players) return;
-    
-    document.getElementById('gameCodeDisplay').textContent = code;
-    document.getElementById('yourSlotDisplay').textContent = mySlot;
-    document.getElementById('deckCount').textContent = data.deck ? data.deck.length : 0;
-    document.getElementById('startBtn').classList.toggle('hidden', !(mySlot === 0 && !data.settings.started));
-    document.getElementById('turnStatus').textContent = !data.settings.started ? "Waiting..." : (data.turn === mySlot ? "YOUR TURN" : `Turn: P${data.turn}`);
-    
+    if(!data) return;
+
+    // Turn Info
+    const isMyTurn = data.started && data.turn === mySlot;
+    document.getElementById('turnStatus').textContent = !data.started ? "Waiting for players..." : (isMyTurn ? "YOUR TURN!" : "Waiting for Player " + data.turn);
+    document.getElementById('startBtn').classList.toggle('hidden', !(mySlot === 0 && !data.started));
+
+    // Player Grid
     const pGrid = document.getElementById('playersGrid');
     pGrid.innerHTML = '';
-    for(let i=0; i<data.settings.playersNeeded; i++) {
-      const p = data.players['slot'+i] || {};
+    for(let i=0; i<4; i++) {
+      const p = data.players['slot'+i];
       const div = document.createElement('div');
-      div.className = `slot ${data.turn === i && data.settings.started ? 'active-turn' : ''}`;
-      const count = (data.hands && data.hands['slot'+i]) ? data.hands['slot'+i].length : 0;
-      div.innerHTML = `<strong>${p.name || '...'}</strong><br><small>Cards: ${count}</small>`;
+      div.className = `slot ${data.turn === i && data.started ? 'active-turn' : ''}`;
+      div.innerHTML = `<strong>${p.name || 'Empty'}</strong><br><small>P${i}</small>`;
       pGrid.appendChild(div);
     }
 
+    // Discard
     const disc = document.getElementById('discardArea');
     if(data.discard && data.discard.length > 0) {
       const top = data.discard[data.discard.length-1];
-      const pretty = top.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣');
-      disc.innerHTML = `<div class="card ${top.match(/[HD]/) ? 'red' : ''}">${pretty}</div>`;
-    } else { disc.innerHTML = '<div class="card" style="border:1px dashed #444; background:transparent">Empty</div>'; }
+      disc.innerHTML = `<div class="card ${top.match(/[HD]/)?'red':''}">${top.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣')}</div>`;
+    } else { disc.innerHTML = '<div class="card" style="border:1px dashed #444; background:transparent">Table</div>'; }
 
+    // Hand
     const handDiv = document.getElementById('hand');
     handDiv.innerHTML = '';
     const myCards = (data.hands && data.hands['slot'+mySlot]) || [];
     myCards.forEach((c, idx) => {
       const el = document.createElement('div');
-      el.className = `card ${c.match(/[HD]/) ? 'red' : ''}`;
+      el.className = `card ${c.match(/[HD]/)?'red':''}`;
       el.textContent = c.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣');
       el.onclick = () => {
         document.querySelectorAll('#hand .card').forEach(x => x.classList.remove('selected'));
-        el.classList.add('selected'); el.dataset.idx = idx;
+        el.classList.add('selected'); el.dataset.val = c; el.dataset.idx = idx;
       };
       handDiv.appendChild(el);
     });
-    document.getElementById('log').innerHTML = (data.log || []).slice(-10).map(l => `<div>${l.msg}</div>`).join('');
+
+    document.getElementById('log').innerHTML = (data.log || []).slice(-5).map(m => `<div>${m}</div>`).join('');
   });
 }
 
-// MATCH LOGIC
-document.getElementById('startBtn').onclick = async () => {
-  const snap = await db.ref(`games/${currentRoom}`).get();
-  const data = snap.val();
+async function startMatch() {
   const suits = ['S','H','D','C'], ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
   let deck = [];
-  suits.forEach(s => ranks.forEach(r => { if(data.settings.includeTwos || r !== '2') deck.push(r+s); }));
+  suits.forEach(s => ranks.forEach(r => { if(r !== '2') deck.push(r+s); }));
   deck.sort(() => Math.random() - 0.5);
+  
   const hands = {};
-  for(let i=0; i<data.settings.playersNeeded; i++) hands['slot'+i] = deck.splice(0, 5);
-  await db.ref(`games/${currentRoom}`).update({ 'settings/started': true, deck: deck, hands: hands, discard: [deck.pop()], turn: 0 });
-};
+  for(let i=0; i<4; i++) hands['slot'+i] = deck.splice(0, 13);
+  
+  await gameRef.update({
+    started: true, turn: 0, deck: deck, hands: hands, discard: [deck.pop() || 'AS'], log: ["Game Started!"]
+  });
+}
 
-document.getElementById('drawBtn').onclick = async () => {
-  const s = await db.ref(`games/${currentRoom}`).get(); const d = s.val();
-  if(d.turn !== mySlot || !d.deck) return;
-  const c = d.deck.pop(); 
-  const currentHand = (d.hands && d.hands['slot'+mySlot]) || [];
-  currentHand.push(c);
-  await db.ref(`games/${currentRoom}`).update({ deck: d.deck, [`hands/slot${mySlot}`]: currentHand });
-};
+async function drawCard() {
+  const s = await gameRef.once('value'); const d = s.val();
+  if(d.turn !== mySlot || !d.deck || d.deck.length === 0) return;
+  const card = d.deck.pop();
+  const h = d.hands['slot'+mySlot]; h.push(card);
+  await gameRef.update({ deck: d.deck, [`hands/slot${mySlot}`]: h });
+}
 
-document.getElementById('discardBtn').onclick = async () => {
+async function playCard() {
   const sel = document.querySelector('#hand .card.selected');
-  if(!sel) return;
-  const s = await db.ref(`games/${currentRoom}`).get(); const d = s.val();
+  if(!sel) return alert("Pick a card first");
+  const s = await gameRef.once('value'); const d = s.val();
   if(d.turn !== mySlot) return;
-  const h = d.hands['slot'+mySlot]; const card = h.splice(sel.dataset.idx, 1)[0];
-  const disc = d.discard || []; disc.push(card);
-  await db.ref(`games/${currentRoom}`).update({ [`hands/slot${mySlot}`]: h, discard: disc, turn: (d.turn + 1) % d.settings.playersNeeded });
-};
 
-document.getElementById('joinBtn').onclick = () => {
-  joinGame(document.getElementById('joinCode').value, document.getElementById('joinName').value || "Player");
-};
+  const card = sel.dataset.val;
+  const h = d.hands['slot'+mySlot];
+  h.splice(sel.dataset.idx, 1);
+  
+  const disc = d.discard || [];
+  disc.push(card);
+
+  await gameRef.update({
+    [`hands/slot${mySlot}`]: h,
+    discard: disc,
+    turn: (d.turn + 1) % 4,
+    log: [...(d.log || []), `${d.players['slot'+mySlot].name} played ${card}`]
+  });
+}
 </script>
 </body>
 </html>
