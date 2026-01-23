@@ -8,29 +8,39 @@
   :root{--bg:#071126;--card:#fff;--muted:#9aa6b2;--accent:#f6c85f}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
     background:linear-gradient(180deg,#071126 0%, #07263a 100%);color:white;min-height:100vh}
-  .wrap{max-width:1100px;margin:18px auto;padding:18px;}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
   h1{margin:0;font-size:1.3rem}
   .panel{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:14px}
+  
+  /* Connection Pill */
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
+  .dot.online { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+  .dot.offline { background: #f87171; }
+
+  /* Home UI */
   .home-grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
-  .btn{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer;color:#000}
-  .btn:hover{opacity:0.9}
+  .btn{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer;color:#000;transition: 0.2s;}
+  .btn:hover{transform: translateY(-2px); opacity:0.9}
   .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--muted)}
   .muted{color:var(--muted)}
   .small{font-size:.9rem}
+
+  /* Game UI */
   .game-area{display:flex;gap:16px;flex-wrap:wrap}
-  .col{flex:1;min-width:260px}
-  .hand{display:flex;gap:6px;flex-wrap:wrap;min-height:100px;padding:10px;background:rgba(255,255,255,0.02);border-radius:10px}
-  .card{width:64px;height:92px;border-radius:6px;background:var(--card);color:#0b1220;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 10px rgba(2,6,23,0.4);cursor:pointer;user-select:none}
+  .col{flex:1;min-width:280px}
+  .hand{display:flex;gap:6px;flex-wrap:wrap;min-height:110px;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;border: 1px dashed rgba(255,255,255,0.1)}
+  .card{width:64px;height:92px;border-radius:6px;background:var(--card);color:#0b1220;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;box-shadow:0 4px 8px rgba(0,0,0,0.3);cursor:pointer;user-select:none;font-size: 1.1rem;}
   .card.red{color:#b91c1c}
-  .card.selected{border:3px solid #f6c85f;transform:translateY(-10px);box-shadow: 0 10px 20px rgba(246,200,95,0.3)}
-  .table{display:flex;gap:12px;align-items:center}
-  #log{height:140px;overflow:auto;background:rgba(0,0,0,0.2);padding:8px;border-radius:8px;font-size:0.85rem;display:flex;flex-direction:column-reverse}
-  input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;padding:10px;border-radius:8px;outline:none}
-  .players-grid{display:flex;gap:6px;flex-wrap:wrap}
-  .slot{padding:8px;border-radius:8px;background:rgba(255,255,255,0.05);min-width:130px;border:1px solid transparent}
+  .card.selected{border:3px solid var(--accent);transform:translateY(-10px);box-shadow: 0 8px 15px rgba(246,200,95,0.4)}
+  .table{display:flex;gap:12px;align-items:center;margin: 15px 0;}
+  
+  #log{height:150px;overflow:auto;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;font-size:0.8rem;display:flex;flex-direction:column-reverse;border: 1px solid rgba(255,255,255,0.05)}
+  input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);color:white;padding:10px;border-radius:8px;outline:none}
+  .players-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom: 15px;}
+  .slot{padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);min-width:120px;border:2px solid transparent}
   .slot.active-turn{border-color:var(--accent);background:rgba(246,200,95,0.1)}
-  footer{margin-top:20px;color:var(--muted);font-size:.85rem;text-align:center}
   .hidden{display:none !important}
 </style>
 </head>
@@ -40,80 +50,81 @@
   <header>
     <div>
       <h1>Mindi Multiplayer</h1>
-      <div class="muted small">Realtime Card Game</div>
+      <div class="status-pill">
+        <div id="statusDot" class="dot"></div>
+        <span id="statusLabel">Connecting...</span>
+        <span id="pingVal" class="muted" style="margin-left:4px"></span>
+      </div>
     </div>
-    <button id="leaveBtn" class="btn secondary hidden">Leave Game</button>
+    <button id="leaveBtn" class="btn secondary hidden" onclick="location.reload()">Leave Game</button>
   </header>
 
   <div class="panel">
     <div id="homeScreen">
       <h3>Host a New Game</h3>
-      <input id="hostName" placeholder="Your Name" style="margin-bottom:10px; width:200px" /><br>
+      <input id="hostName" placeholder="Your Display Name" style="width:240px; margin-bottom:12px" />
       <div class="home-grid">
-        <button class="btn" onclick="setupNewGame(4)">4 Players</button>
-        <button class="btn" onclick="setupNewGame(6)">6 Players</button>
-        <button class="btn" onclick="setupNewGame(8)">8 Players</button>
+        <button class="btn" onclick="createNewGame(4)">4 Players</button>
+        <button class="btn" onclick="createNewGame(6)">6 Players</button>
+        <button class="btn" onclick="createNewGame(8)">8 Players</button>
       </div>
 
-      <hr style="margin:20px 0; border:0; border-top:1px solid rgba(255,255,255,0.1)">
+      <hr style="margin:25px 0; border:0; border-top:1px solid rgba(255,255,255,0.1)">
 
-      <h3>Join Existing</h3>
-      <div style="display:flex;gap:8px">
+      <h3>Join Existing Game</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
         <input id="joinName" placeholder="Your Name" />
-        <input id="joinCode" placeholder="Game Code" style="text-transform:uppercase" />
-        <button id="joinBtn" class="btn">Join</button>
+        <input id="joinCode" placeholder="Code (e.g. AB12XY)" style="text-transform:uppercase" />
+        <button id="joinBtn" class="btn">Join Game</button>
       </div>
     </div>
 
     <div id="gameScreen" class="hidden">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px">
         <div>
-          <div style="font-size:1.2rem">Room: <strong id="gameCodeDisplay" style="color:var(--accent)">---</strong></div>
-          <div class="muted small">Slot: <span id="yourSlot">?</span> | Status: <span id="statusText">Waiting...</span></div>
+          <div style="font-size:1.1rem">Room Code: <strong id="gameCodeDisplay" style="color:var(--accent); letter-spacing:1px">---</strong></div>
+          <div class="muted small">Your Slot: <span id="yourSlotDisplay">?</span> | <span id="turnStatus" style="color:var(--accent)">Waiting for players...</span></div>
         </div>
-        <button id="startBtn" class="btn">Start Game</button>
+        <button id="startBtn" class="btn hidden">Start Match</button>
       </div>
 
       <div class="game-area">
-        <div class="col panel">
-          <h4>Table</h4>
+        <div class="col">
+          <h4>Game Table</h4>
           <div class="table">
-            <div id="deck" class="card" style="background:#2c3e50; color:white">Deck</div>
+            <div id="deck" class="card" style="background:#1e293b; color:#475569; border: 1px solid #334155">Deck</div>
             <div id="discardArea"></div>
-            <div class="muted small">Deck: <span id="deckCount">0</span></div>
+            <div class="muted small">Cards in Deck: <span id="deckCount">0</span></div>
           </div>
 
           <h5>Players</h5>
           <div id="playersGrid" class="players-grid"></div>
 
-          <h5>Log</h5>
+          <h5>Activity Log</h5>
           <div id="log"></div>
         </div>
 
-        <div class="col panel">
+        <div class="col">
           <h4>Your Hand</h4>
           <div id="hand" class="hand"></div>
           
-          <div style="margin-top:15px; display:flex; gap:10px">
-            <button id="drawBtn" class="btn">Draw</button>
+          <div style="margin-top:20px; display:flex; gap:10px">
+            <button id="drawBtn" class="btn">Draw Card</button>
             <button id="takeDiscardBtn" class="btn secondary">Take Discard</button>
-            <button id="discardBtn" class="btn" style="background:#e74c3c; color:white">Play Selected</button>
+            <button id="discardBtn" class="btn" style="background:#e74c3c; color:white">Play Card</button>
           </div>
+          <p class="muted small" style="margin-top:10px">Select a card from your hand, then click "Play Card" to end your turn.</p>
         </div>
       </div>
     </div>
   </div>
-
-  <footer>
-    Firebase Status: <span id="fbStatus">Connecting...</span>
-  </footer>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-// 1. DATABASE CONFIG
+// 1. CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",
   authDomain: "mindi-game-93625.firebaseapp.com",
@@ -126,23 +137,22 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-document.getElementById('fbStatus').textContent = "Connected";
 
-// 2. STATE
+// 2. APP STATE
 let localId = 'u_' + Math.random().toString(36).substring(2, 9);
-let currentGameCode = null;
-let mySlotIndex = null;
-let myName = "Player";
+let currentRoom = null;
+let mySlot = null;
+let myDisplayName = "Player";
 
-// 3. LOGIC UTILS
+// 3. UTILS
 const ALPHANUM = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-function generateCode() {
+function makeRoomCode() {
   let res = '';
   for(let i=0; i<6; i++) res += ALPHANUM[Math.floor(Math.random()*ALPHANUM.length)];
   return res;
 }
 
-function makeDeck(includeTwos) {
+function createFullDeck(includeTwos) {
   const suits = ['S','H','D','C'];
   const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
   let deck = [];
@@ -153,182 +163,220 @@ function makeDeck(includeTwos) {
   return deck.sort(() => Math.random() - 0.5);
 }
 
-// 4. CORE ACTIONS
-async function setupNewGame(num) {
-  myName = document.getElementById('hostName').value || "Host";
-  const code = generateCode();
-  const gameData = {
-    settings: { playersNeeded: num, started: false, includeTwos: (num === 8) },
+// 4. CONNECTION MONITOR
+const statusDot = document.getElementById('statusDot');
+const statusLabel = document.getElementById('statusLabel');
+const pingVal = document.getElementById('pingVal');
+
+db.ref(".info/connected").on("value", (snap) => {
+  if (snap.val() === true) {
+    statusDot.className = "dot online";
+    statusLabel.textContent = "Live";
+  } else {
+    statusDot.className = "dot offline";
+    statusLabel.textContent = "Offline";
+  }
+});
+
+// 5. GAME ACTIONS
+async function createNewGame(playerCount) {
+  myDisplayName = document.getElementById('hostName').value.trim() || "Host";
+  const code = makeRoomCode();
+  const initialData = {
+    settings: { playersNeeded: playerCount, started: false, includeTwos: (playerCount === 8) },
     players: {},
     turn: 0,
     deck: [],
     discard: [],
-    log: [{msg: `Game created by ${myName}`, t: Date.now()}]
+    log: [{msg: `Room created by ${myDisplayName}`, t: Date.now()}]
   };
-  
-  for(let i=0; i<num; i++) gameData.players['slot'+i] = {id: null, name: null};
+  for(let i=0; i<playerCount; i++) initialData.players['slot'+i] = {id: null, name: null};
 
-  await db.ref('games/' + code).set(gameData);
-  joinRoom(code, myName);
+  await db.ref('games/' + code).set(initialData);
+  joinGame(code, myDisplayName);
 }
 
-async function joinRoom(code, name) {
-  code = code.toUpperCase();
+async function joinGame(code, name) {
+  code = code.toUpperCase().trim();
   const snap = await db.ref(`games/${code}`).get();
-  if(!snap.exists()) return alert("Room not found");
+  if(!snap.exists()) return alert("Game code not found!");
   
   const data = snap.val();
-  let assignedSlot = -1;
+  let slotToTake = -1;
 
-  // Find empty slot
   for(let i=0; i<data.settings.playersNeeded; i++) {
     if(!data.players['slot'+i].id) {
-      assignedSlot = i;
+      slotToTake = i;
       break;
     }
   }
 
-  if(assignedSlot === -1) return alert("Room Full");
+  if(slotToTake === -1) return alert("This room is full!");
 
-  await db.ref(`games/${code}/players/slot${assignedSlot}`).set({id: localId, name: name});
+  await db.ref(`games/${code}/players/slot${slotToTake}`).set({id: localId, name: name});
   
-  currentGameCode = code;
-  mySlotIndex = assignedSlot;
-  myName = name;
+  currentRoom = code;
+  mySlot = slotToTake;
+  myDisplayName = name;
 
   document.getElementById('homeScreen').classList.add('hidden');
   document.getElementById('gameScreen').classList.remove('hidden');
   document.getElementById('leaveBtn').classList.remove('hidden');
   
-  listenToGame(code);
+  startListening(code);
 }
 
-function listenToGame(code) {
+function startListening(code) {
   db.ref(`games/${code}`).on('value', snap => {
     const data = snap.val();
     if(!data) return;
 
-    // UI Updates
+    // Updates
     document.getElementById('gameCodeDisplay').textContent = code;
-    document.getElementById('yourSlot').textContent = mySlotIndex;
-    document.getElementById('statusText').textContent = data.settings.started ? "In Progress" : "Lobby";
+    document.getElementById('yourSlotDisplay').textContent = `Slot ${mySlot}`;
     document.getElementById('deckCount').textContent = data.deck ? data.deck.length : 0;
     
-    // Start Button Visibility
-    document.getElementById('startBtn').style.display = (mySlotIndex === 0 && !data.settings.started) ? 'block' : 'none';
+    // Show Start Button only to Host (Slot 0)
+    if(mySlot === 0 && !data.settings.started) {
+      document.getElementById('startBtn').classList.remove('hidden');
+    } else {
+      document.getElementById('startBtn').classList.add('hidden');
+    }
 
-    // Render Players
+    // Turn Status
+    if(!data.settings.started) {
+       document.getElementById('turnStatus').textContent = "Waiting for players to join...";
+    } else {
+       document.getElementById('turnStatus').textContent = (data.turn === mySlot) ? "YOUR TURN" : `Waiting for Player ${data.turn}`;
+    }
+
+    // Players List
     const pGrid = document.getElementById('playersGrid');
     pGrid.innerHTML = '';
     for(let i=0; i<data.settings.playersNeeded; i++) {
       const p = data.players['slot'+i];
       const div = document.createElement('div');
-      div.className = `slot ${data.turn === i ? 'active-turn' : ''}`;
-      div.innerHTML = `<strong>${p.name || 'Waiting...'}</strong><br><small>Cards: ${(data.hands && data.hands['slot'+i]) ? data.hands['slot'+i].length : 0}</small>`;
+      div.className = `slot ${data.turn === i && data.settings.started ? 'active-turn' : ''}`;
+      const cardCount = (data.hands && data.hands['slot'+i]) ? data.hands['slot'+i].length : 0;
+      div.innerHTML = `<strong>${p.name || '...'}</strong><br><small class="muted">Cards: ${cardCount}</small>`;
       pGrid.appendChild(div);
     }
 
-    // Render Discard
+    // Discard Pile
     const disc = document.getElementById('discardArea');
     if(data.discard && data.discard.length > 0) {
       const top = data.discard[data.discard.length-1];
-      disc.innerHTML = `<div class="card ${top.includes('H') || top.includes('D') ? 'red' : ''}">${top.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣')}</div>`;
+      const isRed = top.includes('H') || top.includes('D');
+      const pretty = top.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣');
+      disc.innerHTML = `<div class="card ${isRed ? 'red' : ''}">${pretty}</div>`;
     } else {
-      disc.innerHTML = '<div class="card muted" style="border:1px dashed #444; background:transparent">Empty</div>';
+      disc.innerHTML = '<div class="card" style="border:1px dashed #444; background:transparent; color:#444">Empty</div>';
     }
 
-    // Render Hand
+    // Hand
     const handDiv = document.getElementById('hand');
     handDiv.innerHTML = '';
-    const myCards = (data.hands && data.hands['slot'+mySlotIndex]) || [];
+    const myCards = (data.hands && data.hands['slot'+mySlot]) || [];
     myCards.forEach((c, idx) => {
+      const isRed = c.includes('H') || c.includes('D');
       const cardEl = document.createElement('div');
-      cardEl.className = `card ${c.includes('H') || c.includes('D') ? 'red' : ''}`;
+      cardEl.className = `card ${isRed ? 'red' : ''}`;
       cardEl.textContent = c.replace('H','♥').replace('D','♦').replace('S','♠').replace('C','♣');
       cardEl.onclick = () => {
-        document.querySelectorAll('.card').forEach(el => el.classList.remove('selected'));
+        document.querySelectorAll('#hand .card').forEach(el => el.classList.remove('selected'));
         cardEl.classList.add('selected');
-        cardEl.dataset.cardIdx = idx;
+        cardEl.dataset.idx = idx;
       };
       handDiv.appendChild(cardEl);
     });
 
-    // Render Log
-    const logDiv = document.getElementById('log');
-    logDiv.innerHTML = (data.log || []).map(l => `<div><small class="muted">${new Date(l.t).toLocaleTimeString()}</small> ${l.msg}</div>`).join('');
+    // Log
+    const logBox = document.getElementById('log');
+    logBox.innerHTML = (data.log || []).slice(-15).map(l => `<div><span class="muted">[${new Date(l.t).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}]</span> ${l.msg}</div>`).join('');
   });
 }
 
-// 5. GAMEPLAY ACTIONS
+// 6. BUTTON HANDLERS
 document.getElementById('startBtn').onclick = async () => {
-  const snap = await db.ref(`games/${currentGameCode}`).get();
+  const snap = await db.ref(`games/${currentRoom}`).get();
   const data = snap.val();
-  const deck = makeDeck(data.settings.includeTwos);
+  const deck = createFullDeck(data.settings.includeTwos);
   const hands = {};
-  
-  for(let i=0; i<data.settings.playersNeeded; i++) {
-    hands['slot'+i] = deck.splice(0, 5);
-  }
+  for(let i=0; i<data.settings.playersNeeded; i++) hands['slot'+i] = deck.splice(0, 5);
 
-  await db.ref(`games/${currentGameCode}`).update({
+  await db.ref(`games/${currentRoom}`).update({
     'settings/started': true,
     deck: deck,
     hands: hands,
     discard: [deck.pop()],
     turn: 0
   });
-  db.ref(`games/${currentGameCode}/log`).push({msg: "Game Started!", t: Date.now()});
+  db.ref(`games/${currentRoom}/log`).push({msg: "MATCH STARTED!", t: Date.now()});
 };
 
 document.getElementById('drawBtn').onclick = async () => {
-  const snap = await db.ref(`games/${currentGameCode}`).get();
+  const snap = await db.ref(`games/${currentRoom}`).get();
   const data = snap.val();
-  if(data.turn !== mySlotIndex) return alert("Not your turn");
-  if(!data.deck || data.deck.length === 0) return alert("Deck empty");
+  if(data.turn !== mySlot) return alert("It's not your turn!");
+  if(!data.deck || data.deck.length === 0) return alert("Deck is empty!");
 
   const card = data.deck.pop();
-  const myCards = data.hands['slot'+mySlotIndex] || [];
-  myCards.push(card);
+  const currentHand = data.hands['slot'+mySlot] || [];
+  currentHand.push(card);
 
-  await db.ref(`games/${currentGameCode}`).update({
+  await db.ref(`games/${currentRoom}`).update({
     deck: data.deck,
-    [`hands/slot${mySlotIndex}`]: myCards
+    [`hands/slot${mySlot}`]: currentHand
   });
-  db.ref(`games/${currentGameCode}/log`).push({msg: `${myName} drew a card`, t: Date.now()});
+  db.ref(`games/${currentRoom}/log`).push({msg: `${myDisplayName} drew a card`, t: Date.now()});
+};
+
+document.getElementById('takeDiscardBtn').onclick = async () => {
+  const snap = await db.ref(`games/${currentRoom}`).get();
+  const data = snap.val();
+  if(data.turn !== mySlot) return alert("It's not your turn!");
+  if(!data.discard || data.discard.length === 0) return alert("Discard pile is empty!");
+
+  const card = data.discard.pop();
+  const currentHand = data.hands['slot'+mySlot] || [];
+  currentHand.push(card);
+
+  await db.ref(`games/${currentRoom}`).update({
+    discard: data.discard,
+    [`hands/slot${mySlot}`]: currentHand
+  });
+  db.ref(`games/${currentRoom}/log`).push({msg: `${myDisplayName} took from discard`, t: Date.now()});
 };
 
 document.getElementById('discardBtn').onclick = async () => {
-  const sel = document.querySelector('.card.selected');
-  if(!sel) return alert("Select a card first");
+  const sel = document.querySelector('#hand .card.selected');
+  if(!sel) return alert("Select a card from your hand first!");
   
-  const snap = await db.ref(`games/${currentGameCode}`).get();
+  const snap = await db.ref(`games/${currentRoom}`).get();
   const data = snap.val();
-  if(data.turn !== mySlotIndex) return alert("Not your turn");
+  if(data.turn !== mySlot) return alert("It's not your turn!");
 
-  const idx = parseInt(sel.dataset.cardIdx);
-  const myCards = data.hands['slot'+mySlotIndex];
-  const card = myCards.splice(idx, 1)[0];
-  const discard = data.discard || [];
-  discard.push(card);
+  const idx = parseInt(sel.dataset.idx);
+  const currentHand = data.hands['slot'+mySlot];
+  const playedCard = currentHand.splice(idx, 1)[0];
+  const discardPile = data.discard || [];
+  discardPile.push(playedCard);
 
   const nextTurn = (data.turn + 1) % data.settings.playersNeeded;
 
-  await db.ref(`games/${currentGameCode}`).update({
-    [`hands/slot${mySlotIndex}`]: myCards,
-    discard: discard,
+  await db.ref(`games/${currentRoom}`).update({
+    [`hands/slot${mySlot}`]: currentHand,
+    discard: discardPile,
     turn: nextTurn
   });
-  db.ref(`games/${currentGameCode}/log`).push({msg: `${myName} played ${card}`, t: Date.now()});
+  db.ref(`games/${currentRoom}/log`).push({msg: `${myDisplayName} played ${playedCard}`, t: Date.now()});
 };
 
 document.getElementById('joinBtn').onclick = () => {
   const code = document.getElementById('joinCode').value;
   const name = document.getElementById('joinName').value || "Player";
-  if(code) joinRoom(code, name);
+  if(code) joinGame(code, name);
 };
-
-document.getElementById('leaveBtn').onclick = () => location.reload();
-
 </script>
 </body>
 </html>
