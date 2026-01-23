@@ -3,78 +3,74 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Mindi - Strategic Edition</title>
+<title>Mindi Pro - Trick Collector</title>
 <style>
-  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 80px; --card-h: 115px; }
-  body { margin:0; font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; }
-  
+  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 75px; --card-h: 110px; }
+  body { margin:0; font-family: sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); display: flex; align-items: center; justify-content: center; }
   
-  /* Player Labels */
-  .player { position: absolute; background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); min-width: 90px; text-align: center; z-index: 10; }
-  .active { border-color: var(--gold); box-shadow: 0 0 20px var(--gold); transform: scale(1.05); }
+  /* Positions */
+  .player { position: absolute; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; border: 2px solid #444; min-width: 100px; text-align: center; z-index: 10; }
+  .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
   .top { top: 20px; left: 50%; transform: translateX(-50%); }
   .bottom { bottom: 180px; left: 50%; transform: translateX(-50%); }
   .left { left: 20px; top: 50%; transform: translateY(-50%); }
   .right { right: 20px; top: 50%; transform: translateY(-50%); }
 
-  /* Played Cards - Positioning them near the player */
-  .slot-card { position: absolute; width: var(--card-w); height: var(--card-h); transition: all 0.3s ease-in-out; }
-  .c-top { top: 120px; left: 50%; transform: translateX(-50%); }
-  .c-bottom { bottom: 250px; left: 50%; transform: translateX(-50%); }
-  .c-left { left: 150px; top: 50%; transform: translateY(-50%); }
-  .c-right { right: 150px; top: 50%; transform: translateY(-50%); }
+  /* Captured Mindi Piles */
+  .captured { position: absolute; width: 60px; height: 80px; background: rgba(0,0,0,0.3); border: 1px dashed #666; border-radius: 5px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+  .cap-top { top: 20px; right: 20%; }
+  .cap-bottom { bottom: 180px; left: 20%; }
 
-  /* Trump Indicator */
-  .trump-box { position: fixed; top: 20px; left: 20px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid var(--gold); }
-
-  /* Hand bar */
-  .hand-container { position: fixed; bottom: 0; width: 100%; height: 160px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
-  .my-hand { display: flex; gap: -30px; }
-  .my-hand .card { margin-left: -35px; transition: 0.2s; cursor: pointer; }
-  .my-hand .card:first-child { margin-left: 0; }
-  .my-hand .card:hover { transform: translateY(-25px); z-index: 110; }
-  .my-hand .card.selected { transform: translateY(-40px); border: 3px solid #2979ff; z-index: 120; }
-
-  /* Card UI */
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; box-sizing: border-box; border: 1px solid #999; }
+  /* Cards */
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; border: 1px solid #999; position: relative; }
   .red { color: #d00; }
-  .suit-icon { font-size: 2rem; }
+  .slot-card { position: absolute; transform-origin: center; transition: 0.3s; }
+  .c-top { top: 110px; left: 50%; transform: translateX(-50%); }
+  .c-bottom { bottom: 240px; left: 50%; transform: translateX(-50%); }
+  .c-left { left: 140px; top: 50%; transform: translateY(-50%); }
+  .c-right { right: 140px; top: 50%; transform: translateY(-50%); }
 
-  .btn { background: var(--gold); color: black; border: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-  .btn:disabled { background: #555; opacity: 0.5; }
+  .my-hand { position: fixed; bottom: 0; width: 100%; height: 150px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; gap: -30px; }
+  .my-hand .card { margin-left: -40px; cursor: pointer; transition: 0.2s; }
+  .my-hand .card:first-child { margin-left: 0; }
+  .my-hand .card:hover { transform: translateY(-20px); z-index: 110; }
+  .my-hand .card.selected { transform: translateY(-35px); border: 3px solid #2979ff; z-index: 120; }
+
   .overlay { position: fixed; inset: 0; background: var(--dark); z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .btn { background: var(--gold); color: black; border: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; }
   .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
 <div id="lobby" class="overlay">
-  <h1>MINDI MULTIPLAYER</h1>
-  <input id="userName" placeholder="Enter Name" style="padding:15px; border-radius:8px; width:240px; margin-bottom:15px;" />
+  <h1 style="color:var(--gold)">MINDI GLOBAL</h1>
+  <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:8px; border:none; width:220px; margin-bottom:15px;" />
   <button class="btn" onclick="joinGame()">JOIN TABLE</button>
 </div>
 
 <div class="felt">
-  <div class="trump-box" id="trump-ui">Trump: <span id="trump-suit">Hidden 🔒</span></div>
-  
   <div id="p-top" class="player top">...</div>
   <div id="p-left" class="player left">...</div>
   <div id="p-right" class="player right">...</div>
   <div id="p-bottom" class="player bottom">YOU</div>
 
-  <div id="trick-area">
-    <div id="card-slot-top" class="slot-card c-top"></div>
-    <div id="card-slot-bottom" class="slot-card c-bottom"></div>
-    <div id="card-slot-left" class="slot-card c-left"></div>
-    <div id="card-slot-right" class="slot-card c-right"></div>
+  <div id="cap-teamA" class="captured cap-bottom">Team A<br>0 Mindis</div>
+  <div id="cap-teamB" class="captured cap-top">Team B<br>0 Mindis</div>
+
+  <div id="trick-layer">
+    <div id="slot-top" class="slot-card c-top"></div>
+    <div id="slot-bottom" class="slot-card c-bottom"></div>
+    <div id="slot-left" class="slot-card c-left"></div>
+    <div id="slot-right" class="slot-card c-right"></div>
   </div>
 
-  <button id="dealBtn" class="btn hidden" style="position:absolute;" onclick="dealCards()">DEAL NEW ROUND</button>
+  <button id="dealBtn" class="btn hidden" style="position:absolute; top:40%;" onclick="dealCards()">DEAL CARDS</button>
 
-  <div class="hand-container">
-    <div id="hand" class="my-hand"></div>
-    <button id="playBtn" class="btn" style="margin-left:30px" onclick="playSelected()">PLAY CARD</button>
+  <div class="my-hand">
+    <div id="hand-list" style="display:flex;"></div>
+    <button id="playBtn" class="btn" style="margin-left:40px" onclick="playCard()">PLAY</button>
   </div>
 </div>
 
@@ -93,19 +89,29 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v6_pro'); 
-let myId = 'p' + Math.floor(Math.random() * 999);
+const gameRef = db.ref('mindi_v7_final'); 
+let myId = 'u' + Math.floor(Math.random() * 9999);
 let mySlot = null;
 
 async function joinGame() {
     const name = document.getElementById('userName').value || "Player";
     const snap = await gameRef.once('value');
-    let data = snap.val() || { players: {slot0:{id:""},slot1:{id:""},slot2:{id:""},slot3:{id:""}} };
+    let data = snap.val();
+
+    // Fix: Robust initialization if players object is missing
+    if(!data || !data.players) {
+        await gameRef.set({
+            started: false, turn: 0,
+            players: { slot0:{id:"",name:""}, slot1:{id:"",name:""}, slot2:{id:"",name:""}, slot3:{id:"",name:""} },
+            mindis: {teamA: 0, teamB: 0}
+        });
+        data = (await gameRef.once('value')).val();
+    }
 
     let slot = -1;
     for(let i=0; i<4; i++) { if(!data.players['slot'+i].id) { slot = i; break; } }
-    if(slot === -1) return alert("Full");
-
+    
+    if(slot === -1) return alert("Table Full");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id: myId, name: name});
     document.getElementById('lobby').classList.add('hidden');
@@ -114,107 +120,105 @@ async function joinGame() {
 
 function sync() {
     gameRef.on('value', snap => {
-        const data = snap.val();
-        if(!data) return;
+        const d = snap.val();
+        if(!d) return;
 
-        const getRelPos = (s) => {
+        const getPos = (s) => {
             const rel = (s - mySlot + 4) % 4;
             return ['bottom', 'right', 'top', 'left'][rel];
         };
 
-        // Update Names & Turn
         for(let i=0; i<4; i++) {
-            const p = data.players['slot'+i];
-            const pos = getRelPos(i);
-            const el = document.getElementById('p-' + pos);
+            const p = d.players['slot'+i];
+            const pos = getPos(i);
+            const el = document.getElementById('p-'+pos);
             if(el) {
                 el.innerHTML = `<strong>${p.name || '...'}</strong>`;
-                el.classList.toggle('active', data.turn === i && data.started);
+                el.classList.toggle('active', d.turn === i && d.started);
             }
-            
-            // Render Trick Cards
-            const slotEl = document.getElementById('card-slot-' + pos);
+            const slotEl = document.getElementById('slot-'+pos);
             slotEl.innerHTML = '';
-            if(data.trick && data.trick['slot'+i]) {
-                slotEl.appendChild(createCardUI(data.trick['slot'+i]));
+            if(d.currentTrick && d.currentTrick['slot'+i]) {
+                slotEl.appendChild(createCard(d.currentTrick['slot'+i]));
             }
         }
 
-        // Trump UI
-        document.getElementById('trump-suit').textContent = data.trumpRevealed ? data.trumpSuit : "Hidden 🔒";
+        document.getElementById('cap-teamA').innerHTML = `Team A<br>${d.mindis?.teamA || 0} Mindis`;
+        document.getElementById('cap-teamB').innerHTML = `Team B<br>${d.mindis?.teamB || 0} Mindis`;
 
-        // Play Button Visibility
-        document.getElementById('playBtn').disabled = (data.turn !== mySlot);
-        document.getElementById('dealBtn').classList.toggle('hidden', !(mySlot === 0 && !data.started));
+        document.getElementById('dealBtn').classList.toggle('hidden', !(mySlot === 0 && !d.started));
+        document.getElementById('playBtn').disabled = (d.turn !== mySlot);
 
-        // Hand
-        const handArea = document.getElementById('hand');
-        handArea.innerHTML = '';
-        const myCards = (data.hands && data.hands['slot'+mySlot]) || [];
-        myCards.forEach((c, idx) => {
-            const el = createCardUI(c);
+        const handList = document.getElementById('hand-list');
+        handList.innerHTML = '';
+        const cards = (d.hands && d.hands['slot'+mySlot]) || [];
+        cards.forEach((c, idx) => {
+            const el = createCard(c);
             el.onclick = () => {
-                document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
+                document.querySelectorAll('#hand-list .card').forEach(x => x.classList.remove('selected'));
                 el.classList.add('selected'); el.dataset.val = c; el.dataset.idx = idx;
             };
-            handArea.appendChild(el);
+            handList.appendChild(el);
         });
     });
 }
 
-function createCardUI(c) {
+function createCard(c) {
     const el = document.createElement('div');
-    const suit = c.slice(-1);
-    const val = c.slice(0, -1);
-    const icons = {H:'♥', D:'♦', S:'♠', C:'♣'};
+    const suit = c.slice(-1), val = c.slice(0, -1);
+    const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
     el.className = `card ${'HD'.includes(suit) ? 'red' : ''}`;
-    el.innerHTML = `<div>${val}</div><div class="suit-icon">${icons[suit]}</div><div style="transform:rotate(180deg)">${val}</div>`;
+    el.innerHTML = `<div>${val}</div><div style="font-size:2rem">${syms[suit]}</div><div style="transform:rotate(180deg)">${val}</div>`;
     return el;
 }
 
 async function dealCards() {
-    const suits = ['S','H','D','C'], ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3'];
+    const suits = ['S','H','D','C'], ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
     let deck = [];
     suits.forEach(s => ranks.forEach(r => deck.push(r+s)));
     deck.sort(() => Math.random() - 0.5);
-    
     const hands = {};
     for(let i=0; i<4; i++) hands['slot'+i] = deck.splice(0, 13);
     
-    // Choose a random hidden trump card from slot 0's hand
-    const randomCard = hands['slot0'][Math.floor(Math.random()*13)];
-    const trumpSuit = randomCard.slice(-1);
-
     await gameRef.update({
-        started: true, turn: 0,
-        hands: hands,
-        trick: {slot0:"", slot1:"", slot2:"", slot3:""},
-        trumpSuit: trumpSuit,
-        trumpRevealed: false
+        started: true, turn: 0, hands: hands,
+        currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""},
+        mindis: {teamA: 0, teamB: 0}
     });
 }
 
-async function playSelected() {
-    const sel = document.querySelector('.my-hand .card.selected');
+async function playCard() {
+    const sel = document.querySelector('.selected');
     if(!sel) return;
     const snap = await gameRef.once('value');
     const d = snap.val();
     
     const card = sel.dataset.val;
-    const suit = card.slice(-1);
     const h = d.hands['slot'+mySlot];
     h.splice(sel.dataset.idx, 1);
+    
+    const trick = d.currentTrick || {};
+    trick['slot'+mySlot] = card;
 
-    // Trump Reveal Logic: If someone doesn't have the lead suit, reveal trump
-    let reveal = d.trumpRevealed;
-    // (Actual lead suit logic would go here, simplified for now)
+    let nextTurn = (d.turn + 1) % 4;
+    let updates = { [`hands/slot${mySlot}`]: h, currentTrick: trick, turn: nextTurn };
 
-    await gameRef.update({
-        [`hands/slot${mySlot}`]: h,
-        [`trick/slot${mySlot}`]: card,
-        turn: (d.turn + 1) % 4,
-        trumpRevealed: reveal
-    });
+    // If 4 cards played, evaluate trick
+    const played = Object.values(trick).filter(c => c !== "");
+    if(played.length === 4) {
+        // Logic to find winner and check for 10s (simplified)
+        let hasMindi = played.some(c => c.startsWith('10'));
+        if(hasMindi) {
+            const team = (mySlot % 2 === 0) ? 'teamA' : 'teamB';
+            updates[`mindis/${team}`] = (d.mindis[team] || 0) + 1;
+        }
+        // Delay clearing the table so players can see
+        setTimeout(async () => {
+            await gameRef.update({ currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""} });
+        }, 2000);
+    }
+
+    await gameRef.update(updates);
 }
 </script>
 </body>
