@@ -35,6 +35,9 @@
   .slot{padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);min-width:120px;border:2px solid transparent}
   .slot.active-turn{border-color:var(--accent);background:rgba(246,200,95,0.1)}
   .hidden{display:none !important}
+  
+  /* Version Indicator */
+  .version-tag { text-align: center; margin-top: 50px; font-size: 5rem; font-weight: 900; color: #ff4444; text-shadow: 0 0 20px rgba(255,68,68,0.4); opacity: 0.8; letter-spacing: 10px; }
 </style>
 </head>
 <body>
@@ -101,6 +104,8 @@
       </div>
     </div>
   </div>
+
+  <div class="version-tag">MANAN</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -139,7 +144,7 @@ async function createNewGame(num) {
   };
   for(let i=0; i<num; i++) initial.players['slot'+i] = {id: null, name: null};
   await db.ref('games/' + code).set(initial);
-  joinGame(code, myDisplayName);
+  setTimeout(() => joinGame(code, myDisplayName), 600);
 }
 
 async function joinGame(code, name) {
@@ -147,11 +152,17 @@ async function joinGame(code, name) {
   const snap = await db.ref(`games/${code}`).get();
   if(!snap.exists()) return alert("Room not found");
   const data = snap.val();
+  
+  if(!data.players) return;
+  
   let slot = -1;
   for(let i=0; i<data.settings.playersNeeded; i++) {
-    if(!data.players['slot'+i] || !data.players['slot'+i].id) { slot = i; break; }
+    const slotKey = 'slot' + i;
+    if(!data.players[slotKey] || !data.players[slotKey].id) { slot = i; break; }
   }
-  if(slot === -1) return alert("Full");
+  
+  if(slot === -1) return alert("Room Full");
+  
   await db.ref(`games/${code}/players/slot${slot}`).set({id: localId, name: name});
   currentRoom = code; mySlot = slot; myDisplayName = name;
   document.getElementById('homeScreen').classList.add('hidden');
@@ -164,6 +175,7 @@ function startListening(code) {
   db.ref(`games/${code}`).on('value', snap => {
     const data = snap.val();
     if(!data || !data.players) return;
+    
     document.getElementById('gameCodeDisplay').textContent = code;
     document.getElementById('yourSlotDisplay').textContent = mySlot;
     document.getElementById('deckCount').textContent = data.deck ? data.deck.length : 0;
