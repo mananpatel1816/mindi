@@ -2,91 +2,60 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mindi - Absolute Stability Build</title>
+<title>Mindi - Stable Build</title>
 <style>
-  :root{--bg:#071126;--accent:#f6c85f;--card-w:80px;--card-h:115px}
-  body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:white;overflow:hidden;height:100vh}
-  
-  /* LOBBY UI */
-  .overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #0a1f44 0%, #071126 100%); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-  .lobby-card { background: rgba(255,255,255,0.03); padding: 50px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); text-align: center; max-width: 400px; width: 90%; }
-  
-  /* GAME BOARD (Game Pigeon Style) */
+  :root{--bg:#071126;--accent:#f6c85f;--card-w:75px;--card-h:110px}
+  body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:white;overflow:hidden;height:100vh}
+  .overlay { position: fixed; inset: 0; background: #071126; z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
   .game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #1a5e3a 0%, #0a2e1a 100%); display: flex; align-items: center; justify-content: center; }
-  .player-box { position: absolute; padding: 15px; text-align: center; background: rgba(0,0,0,0.6); border-radius: 18px; min-width: 130px; border: 2px solid rgba(255,255,255,0.15); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .active-turn { border-color: var(--accent); box-shadow: 0 0 25px var(--accent); background: rgba(246,200,95,0.25); transform: scale(1.1); }
-  
-  .pos-bottom { bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; }
-  .pos-top { top: 30px; left: 50%; transform: translateX(-50%); }
-  .pos-left { left: 30px; top: 50%; transform: translateY(-50%); }
-  .pos-right { right: 30px; top: 50%; transform: translateY(-50%); }
-
-  .table-center { width: 350px; height: 350px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
-  .played-card { position: absolute; box-shadow: 0 8px 20px rgba(0,0,0,0.4); pointer-events: none; transition: transform 0.5s ease-out; }
-
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 12px; font-weight: 700; font-size: 1.4rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px; cursor: pointer; user-select: none; border: 1px solid #ddd; position: relative; transition: 0.2s; }
-  .card.red { color: #e53935; }
-  .card .suit-mid { font-size: 3rem; }
-  .card.selected { border: 4px solid #2979ff; transform: translateY(-30px) scale(1.05); box-shadow: 0 15px 30px rgba(41,121,255,0.6); z-index: 200; }
-
-  .my-hand { display: flex; gap: -25px; max-width: 95vw; padding: 10px; justify-content: center; height: 150px; }
-  .my-hand .card { margin-left: -20px; box-shadow: -5px 0 10px rgba(0,0,0,0.2); }
-  .my-hand .card:first-child { margin-left: 0; }
-  .my-hand .card:hover { transform: translateY(-15px); z-index: 210; margin-right: 10px; }
-
-  .btn { background: var(--accent); color: #000; border: none; padding: 18px 45px; border-radius: 40px; font-weight: 800; font-size: 1.2rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
-  .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(246,200,95,0.3); }
-  .btn:active { transform: translateY(0); }
-  .btn:disabled { background: #444; color: #888; cursor: not-allowed; }
-
-  input { padding: 18px; border-radius: 15px; border: 2px solid #222; background: #000; color: white; font-size: 1.2rem; width: 100%; box-sizing: border-box; margin-bottom: 25px; text-align: center; }
+  .player-box { position: absolute; padding: 12px; text-align: center; background: rgba(0,0,0,0.6); border-radius: 15px; min-width: 120px; border: 2px solid rgba(255,255,255,0.1); }
+  .active-turn { border-color: var(--accent); box-shadow: 0 0 20px var(--accent); }
+  .pos-bottom { bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; }
+  .pos-top { top: 20px; left: 50%; transform: translateX(-50%); }
+  .pos-left { left: 20px; top: 50%; transform: translateY(-50%); }
+  .pos-right { right: 20px; top: 50%; transform: translateY(-50%); }
+  .table-center { width: 300px; height: 300px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+  .played-card { position: absolute; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 8px; font-weight: 700; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px; cursor: pointer; border: 1px solid #ddd; position: relative; }
+  .card.red { color: #d00; }
+  .card.selected { border: 3px solid #2979ff; transform: translateY(-20px); z-index: 200; }
+  .my-hand { display: flex; gap: -20px; padding: 10px; justify-content: center; }
+  .my-hand .card { margin-left: -15px; }
+  .btn { background: var(--accent); color: black; border: none; padding: 15px 35px; border-radius: 30px; font-weight: bold; cursor: pointer; }
   .hidden { display: none !important; }
-  .manan-watermark { position: fixed; bottom: 20px; right: 30px; font-size: 5rem; font-weight: 900; color: #ff4444; opacity: 0.15; pointer-events: none; letter-spacing: 15px; }
+  input { padding: 15px; border-radius: 10px; margin-bottom: 20px; width: 250px; text-align: center; }
 </style>
 </head>
 <body>
 
 <div id="lobbyOverlay" class="overlay">
-  <div class="lobby-card">
-    <h1 style="margin-bottom:5px; font-size: 2.5rem;">MINDI</h1>
-    <p style="color:#6e7f91; margin-bottom:35px;">Global Real-time Multiplayer</p>
-    <input id="userName" placeholder="Type Your Name..." maxlength="12" />
-    <button id="joinBtn" class="btn" onclick="enterGame()">Enter Table</button>
-    <div style="margin-top:40px;">
-      <button onclick="resetDB()" style="background:none; border:none; color:#444; cursor:pointer; text-decoration:underline;">System Reset (Emergency Only)</button>
-    </div>
-  </div>
+  <h1>MINDI</h1>
+  <input id="userName" placeholder="Your Name" />
+  <button id="joinBtn" class="btn" onclick="enterGame()">JOIN TABLE</button>
+  <button onclick="resetDB()" style="margin-top:30px; background:none; color:#444; border:none; cursor:pointer; text-decoration:underline">Reset System</button>
 </div>
 
 <div class="game-container">
-  <div id="pTop" class="player-box pos-top">Waiting...</div>
-  <div id="pLeft" class="player-box pos-left">Waiting...</div>
-  <div id="pRight" class="player-box pos-right">Waiting...</div>
-  
+  <div id="pTop" class="player-box pos-top">...</div>
+  <div id="pLeft" class="player-box pos-left">...</div>
+  <div id="pRight" class="player-box pos-right">...</div>
   <div class="table-center">
     <div id="playedCardsArea"></div>
-    <div id="gameStatus" style="position:absolute; top:-70px; width:400px; text-align:center; font-weight:800; color:var(--accent); font-size: 1.4rem; text-shadow: 0 4px 8px rgba(0,0,0,0.5);">Initializing...</div>
-    <button id="startBtn" class="btn hidden" onclick="startMatch()">Deal 52 Cards</button>
+    <div id="gameStatus" style="position:absolute; top:-50px; width:250px; text-align:center; font-weight:800; color:var(--accent)"></div>
+    <button id="startBtn" class="btn hidden" onclick="startMatch()">DEAL CARDS</button>
   </div>
-
   <div class="pos-bottom">
-    <div id="pBottom" class="player-box" style="position:static; margin:0 auto 15px auto; background:var(--accent); color:#000; font-weight:800; border:none;">YOU</div>
+    <div id="pBottom" class="player-box" style="position:static; margin-bottom:10px; background:var(--accent); color:black">YOU</div>
     <div id="hand" class="my-hand"></div>
-    <div style="text-align:center; margin-top:25px">
-        <button id="playBtn" class="btn" onclick="playCard()">Play Card</button>
-    </div>
+    <div style="text-align:center; margin-top:20px"><button class="btn" onclick="playCard()">PLAY CARD</button></div>
   </div>
 </div>
-
-<div class="manan-watermark">MANAN</div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-// --- CORE CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",
   authDomain: "mindi-game-93625.firebaseapp.com",
@@ -99,132 +68,78 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('global_match_stable'); // Using a fresh key for stability
-let myId = 'u_' + Math.random().toString(36).substring(2, 8);
+const gameRef = db.ref('global_mindi_v4'); // New key for fresh start
+let myId = 'u' + Math.floor(Math.random()*1000);
 let mySlot = null;
 
-// --- STABILITY ENGINE ---
-
 async function resetDB() {
-    if(!confirm("Wipe all data?")) return;
-    const cleanState = {
-        started: false,
-        turn: 0,
-        players: { 
-            slot0:{id:"", name:""}, slot1:{id:"", name:""}, 
-            slot2:{id:"", name:""}, slot3:{id:"", name:""} 
-        },
-        discard: [],
-        hands: { slot0:[], slot1:[], slot2:[], slot3:[] }
-    };
-    await gameRef.set(cleanState);
+    await gameRef.set({
+        started: false, turn: 0,
+        players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} },
+        discard: ["EMPTY"] 
+    });
     location.reload();
 }
 
-async function ensureDBExists() {
+async function enterGame() {
+    const name = document.getElementById('userName').value || "Player";
     const snap = await gameRef.once('value');
-    if (!snap.exists() || !snap.val().players) {
-        console.log("Creating fresh DB structure...");
+    let data = snap.val();
+
+    if(!data || !data.players) {
         await gameRef.set({
             started: false, turn: 0,
-            players: { slot0:{id:"",name:""}, slot1:{id:"",name:""}, slot2:{id:"",name:""}, slot3:{id:"",name:""} }
+            players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} },
+            discard: ["EMPTY"]
         });
-        // Return fresh data
-        const retry = await gameRef.once('value');
-        return retry.val();
+        data = (await gameRef.once('value')).val();
     }
-    return snap.val();
-}
 
-async function enterGame() {
-    const btn = document.getElementById('joinBtn');
-    const name = document.getElementById('userName').value.trim() || "User_" + myId.slice(-3);
-    
-    try {
-        btn.disabled = true;
-        btn.textContent = "SYNCING...";
-
-        // 1. Force check DB structure before reading
-        let data = await ensureDBExists();
-
-        // 2. Identify Slot
-        let slot = -1;
-        for(let i=0; i<4; i++) {
-            const currentSlot = data.players['slot'+i];
-            if(!currentSlot || !currentSlot.id) { 
-                slot = i; 
-                break; 
-            }
-        }
-
-        if(slot === -1) {
-            btn.disabled = false;
-            btn.textContent = "Enter Table";
-            return alert("Table is full. Open a different session or Reset.");
-        }
-
-        // 3. Assign
-        mySlot = slot;
-        await gameRef.child('players/slot'+mySlot).set({id: myId, name: name});
-        
-        document.getElementById('lobbyOverlay').classList.add('hidden');
-        listen();
-    } catch (e) {
-        console.error(e);
-        btn.disabled = false;
-        btn.textContent = "Try Again";
-        alert("System Busy: Attempting to heal database. Please try again in 2 seconds.");
+    let slot = -1;
+    for(let i=0; i<4; i++) {
+        if(!data.players['slot'+i].id) { slot = i; break; }
     }
+
+    if(slot === -1) return alert("Table Full");
+    mySlot = slot;
+    await gameRef.child('players/slot'+slot).set({id: myId, name: name});
+    document.getElementById('lobbyOverlay').classList.add('hidden');
+    listen();
 }
 
 function listen() {
     gameRef.on('value', snap => {
         const data = snap.val();
-        // Global Guard: If data is wiped while someone is playing
         if(!data || !data.players) return;
 
-        // Position Logic: Bottom is always YOU
-        const getPosId = (s) => {
+        const getPos = (s) => {
             const rel = (s - mySlot + 4) % 4;
             return ['pBottom', 'pRight', 'pTop', 'pLeft'][rel];
         };
 
         for(let i=0; i<4; i++) {
-            const p = data.players['slot'+i] || {name: "Empty"};
-            const el = document.getElementById(getPosId(i));
+            const p = data.players['slot'+i];
+            const el = document.getElementById(getPos(i));
             if(el) {
-                el.innerHTML = `<strong>${p.name || '...'}</strong>`;
+                el.innerHTML = `<strong>${p.name || 'Waiting...'}</strong>`;
                 el.classList.toggle('active-turn', data.started && data.turn === i);
             }
         }
 
-        // Host Control
-        const startBtn = document.getElementById('startBtn');
-        startBtn.classList.toggle('hidden', !(mySlot === 0 && !data.started));
-        
-        const statusEl = document.getElementById('gameStatus');
-        if(!data.started) {
-            statusEl.textContent = (mySlot === 0) ? "YOU ARE HOST: DEAL CARDS" : "WAITING FOR HOST TO DEAL";
-        } else {
-            const turnName = data.players['slot'+data.turn]?.name || "Player";
-            statusEl.textContent = (data.turn === mySlot) ? "YOUR TURN" : `${turnName.toUpperCase()}'S TURN`;
-        }
+        document.getElementById('startBtn').classList.toggle('hidden', !(mySlot === 0 && !data.started));
+        document.getElementById('gameStatus').textContent = data.started ? `Turn: ${data.players['slot'+data.turn].name}` : "WAITING FOR HOST";
 
-        // Center Board Logic
         const table = document.getElementById('playedCardsArea');
         table.innerHTML = '';
         if(data.discard && Array.isArray(data.discard)) {
-            data.discard.slice(-4).forEach((c, idx) => {
+            data.discard.filter(c => c !== "EMPTY").slice(-4).forEach((c, i) => {
                 const cardEl = createCardEl(c);
                 cardEl.classList.add('played-card');
-                const rotation = (idx * 20) - 30;
-                const offset = (idx * 15) - 30;
-                cardEl.style.transform = `translate(${offset}px, ${idx*2}px) rotate(${rotation}deg)`;
+                cardEl.style.transform = `rotate(${i*10-15}deg) translate(${i*10}px)`;
                 table.appendChild(cardEl);
             });
         }
 
-        // Hand Sync
         const handDiv = document.getElementById('hand');
         handDiv.innerHTML = '';
         const myCards = (data.hands && data.hands['slot'+mySlot]) || [];
@@ -232,9 +147,7 @@ function listen() {
             const el = createCardEl(c);
             el.onclick = () => {
                 document.querySelectorAll('#hand .card').forEach(x => x.classList.remove('selected'));
-                el.classList.add('selected'); 
-                el.dataset.val = c; 
-                el.dataset.idx = idx;
+                el.classList.add('selected'); el.dataset.val = c; el.dataset.idx = idx;
             };
             handDiv.appendChild(el);
         });
@@ -243,65 +156,52 @@ function listen() {
 
 function createCardEl(c) {
     const el = document.createElement('div');
-    if(!c) return el;
     const suit = c.slice(-1);
     const val = c.slice(0, -1);
-    const symbols = {H:'♥', D:'♦', S:'♠', C:'♣'};
+    const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
     el.className = `card ${'HD'.includes(suit) ? 'red' : ''}`;
-    el.innerHTML = `<div style="align-self:flex-start">${val}</div><div class="suit-mid">${symbols[suit]}</div><div style="transform:rotate(180deg)">${val}</div>`;
+    el.innerHTML = `<div>${val}</div><div>${syms[suit]}</div><div style="transform:rotate(180deg)">${val}</div>`;
     return el;
 }
 
 async function startMatch() {
-    try {
-        const suits = ['S','H','D','C'], ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3'];
-        let deck = [];
-        suits.forEach(s => ranks.forEach(r => deck.push(r+s)));
-        // Proper Shuffle
-        for (let i = deck.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [deck[i], deck[j]] = [deck[j], deck[i]];
-        }
-        
-        const hands = {};
-        for(let i=0; i<4; i++) hands['slot'+i] = deck.splice(0, 13);
-        
-        await gameRef.update({
-            started: true,
-            turn: 0,
-            hands: hands,
-            discard: [deck.pop()],
-            deck: deck
-        });
-    } catch (e) {
-        alert("Database error during deal: " + e.message);
-    }
+    const suits = ['S','H','D','C'], ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3'];
+    let deck = [];
+    suits.forEach(s => ranks.forEach(r => deck.push(r+s)));
+    deck.sort(() => Math.random() - 0.5);
+    
+    const hands = {};
+    for(let i=0; i<4; i++) hands['slot'+i] = deck.splice(0, 13);
+    
+    // Ensure discard is never undefined
+    const firstCard = deck.length > 0 ? deck.pop() : "AS";
+
+    await gameRef.update({
+        started: true, turn: 0,
+        hands: hands,
+        discard: [firstCard],
+        deck: deck
+    });
 }
 
 async function playCard() {
     const sel = document.querySelector('#hand .card.selected');
     if(!sel) return;
-    
-    try {
-        const snap = await gameRef.once('value');
-        const d = snap.val();
-        if(!d.started || d.turn !== mySlot) return;
+    const snap = await gameRef.once('value');
+    const d = snap.val();
+    if(d.turn !== mySlot) return;
 
-        const card = sel.dataset.val;
-        const h = d.hands['slot'+mySlot];
-        h.splice(parseInt(sel.dataset.idx), 1);
-        
-        const disc = d.discard || [];
-        disc.push(card);
+    const card = sel.dataset.val;
+    const h = d.hands['slot'+mySlot];
+    h.splice(sel.dataset.idx, 1);
+    const disc = Array.isArray(d.discard) ? d.discard : [];
+    disc.push(card);
 
-        await gameRef.update({
-            [`hands/slot${mySlot}`]: h,
-            discard: disc,
-            turn: (d.turn + 1) % 4
-        });
-    } catch (e) {
-        alert("Sync error: " + e.message);
-    }
+    await gameRef.update({
+        [`hands/slot${mySlot}`]: h,
+        discard: disc,
+        turn: (d.turn + 1) % 4
+    });
 }
 </script>
 </body>
