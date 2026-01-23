@@ -3,91 +3,77 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Mindi - Mobile Blind Trump</title>
+<title>Mindi - Fresh Start</title>
 <style>
-  :root { 
-    --green: #1a5e3a; 
-    --dark: #050c1a; 
-    --gold: #f6c85f; 
-    /* Scaled down for high-PPI iPhone screens */
-    --card-w: 55px; 
-    --card-h: 80px; 
-  }
+  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 52px; --card-h: 75px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); display: flex; align-items: center; justify-content: center; }
   
-  /* Compact Player Labels */
-  .player { position: absolute; background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 15px; border: 1.5px solid #555; font-size: 0.8rem; z-index: 10; }
+  /* Reset Button Style */
+  .btn-nuclear { background: #ff3b30; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; margin-top: 20px; cursor: pointer; border: 2px solid rgba(255,255,255,0.3); }
+
+  .player { position: absolute; background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.75rem; z-index: 10; }
   .active { border-color: var(--gold); box-shadow: 0 0 10px var(--gold); }
-  .top { top: 15px; left: 50%; transform: translateX(-50%); }
-  .bottom { bottom: 140px; left: 50%; transform: translateX(-50%); }
+  .top { top: 10px; left: 50%; transform: translateX(-50%); }
+  .bottom { bottom: 130px; left: 50%; transform: translateX(-50%); }
   .left { left: 10px; top: 45%; transform: translateY(-50%); }
   .right { right: 10px; top: 45%; transform: translateY(-50%); }
 
-  /* Hukm UI - Hidden for everyone */
-  .hukm-indicator { position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 10px; border: 1px solid var(--gold); z-index: 200; text-align: center; }
-  .hukm-card { 
-    width: 45px; height: 65px; 
-    background: linear-gradient(135deg, #a00 0%, #700 100%); 
-    border: 2px solid white; border-radius: 4px; 
-    display: flex; align-items: center; justify-content: center; 
-    margin: 5px auto; transition: transform 0.6s, opacity 0.3s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-  }
-  .revealed-hukm { background: white !important; color: black; font-weight: bold; flex-direction: column; justify-content: space-between; padding: 4px; box-sizing: border-box; }
+  .hukm-indicator { position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 5px; border-radius: 8px; border: 1px solid var(--gold); z-index: 200; }
+  .hukm-card { width: 40px; height: 58px; background: linear-gradient(135deg, #a00 0%, #700 100%); border: 1.5px solid white; border-radius: 4px; margin: 3px auto; transition: 0.6s; }
+  .revealed-hukm { background: white !important; color: black; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; }
 
-  /* Table Cards Layout */
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 5px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 4px; border: 1px solid #999; box-sizing: border-box; position: relative; font-size: 0.9rem; }
-  .card.locked { filter: brightness(0.4); }
-  .card.locked::after { content: '?'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 1.5rem; }
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 5px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 3px; border: 1px solid #999; box-sizing: border-box; font-size: 0.8rem; }
+  .locked { filter: brightness(0.3); }
+  .locked::after { content: '?'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 1.2rem; }
   .red { color: #d00; }
   
-  .slot-card { position: absolute; transition: 0.4s ease-out; }
-  .c-top { top: 90px; left: 50%; transform: translateX(-50%); }
-  .c-bottom { bottom: 200px; left: 50%; transform: translateX(-50%); }
-  .c-left { left: 110px; top: 45%; transform: translateY(-50%); }
-  .c-right { right: 110px; top: 45%; transform: translateY(-50%); }
+  .slot-card { position: absolute; transition: 0.3s ease-out; }
+  .c-top { top: 80px; left: 50%; transform: translateX(-50%); }
+  .c-bottom { bottom: 180px; left: 50%; transform: translateX(-50%); }
+  .c-left { left: 100px; top: 45%; transform: translateY(-50%); }
+  .c-right { right: 100px; top: 45%; transform: translateY(-50%); }
 
-  /* Mobile Hand Area */
-  .hand-container { position: fixed; bottom: 0; width: 100%; height: 110px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 100; padding-bottom: 10px; }
-  .my-hand { display: flex; gap: -30px; }
-  .my-hand .card { margin-left: -35px; cursor: pointer; transition: 0.2s; box-shadow: -2px 0 5px rgba(0,0,0,0.3); }
-  .my-hand .card.selected { transform: translateY(-25px); border: 2.5px solid #2979ff; z-index: 150; }
+  .hand-container { position: fixed; bottom: 0; width: 100%; height: 100px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .my-hand { display: flex; gap: -32px; }
+  .my-hand .card { margin-left: -32px; cursor: pointer; transition: 0.2s; box-shadow: -2px 0 5px rgba(0,0,0,0.4); }
+  .my-hand .card.selected { transform: translateY(-20px); border: 2px solid #2979ff; z-index: 150; }
 
-  .btn { background: var(--gold); color: black; border: none; padding: 10px 18px; border-radius: 15px; font-weight: bold; font-size: 0.9rem; }
+  .btn { background: var(--gold); color: black; border: none; padding: 10px 20px; border-radius: 15px; font-weight: bold; font-size: 0.85rem; }
+  .hidden { display: none !important; }
+  .overlay { position: fixed; inset: 0; background: var(--dark); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 </style>
 </head>
 <body>
 
-<div id="lobby" class="overlay" style="position:fixed; inset:0; background:var(--dark); z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-  <h2 style="color:var(--gold)">MINDI MOBILE</h2>
-  <input id="userName" placeholder="Your Name" style="padding:12px; border-radius:8px; width:180px; margin-bottom:10px;" />
-  <button class="btn" onclick="joinGame()">START SESSION</button>
+<div id="lobby" class="overlay">
+  <h2 style="color:var(--gold); margin-bottom:5px;">MINDI LOBBY</h2>
+  <p id="player-count" style="font-size:0.8rem; color:#888;">Checking table...</p>
+  <input id="userName" placeholder="Your Name" style="padding:12px; border-radius:8px; width:180px; margin-bottom:10px; border:none;" />
+  <button class="btn" onclick="joinGame()">JOIN GAME</button>
+  
+  <button class="btn-nuclear" onclick="nuclearReset()">☢ NUCLEAR RESET</button>
+  <p style="font-size:0.6rem; color:#666; margin-top:10px; width:200px; text-align:center;">Use Nuclear Reset if the table is stuck or players can't join.</p>
 </div>
 
 <div class="felt">
   <div class="hukm-indicator">
-    <div style="font-size:0.6rem">HUKM</div>
+    <div style="font-size:0.5rem">HUKM</div>
     <div id="hukm-box" class="hukm-card"></div>
   </div>
 
-  <button id="dealBtn" class="btn hidden" style="position:absolute; top:40%" onclick="dealNewGame()">DEAL</button>
+  <button id="dealBtn" class="btn hidden" style="position:absolute; top:40%" onclick="dealNewGame()">DEAL CARDS</button>
 
   <div id="p-top" class="player top">...</div>
   <div id="p-left" class="player left">...</div>
   <div id="p-right" class="player right">...</div>
   <div id="p-bottom" class="player bottom">YOU</div>
 
-  <div id="table-slots">
-    <div id="slot-top" class="slot-card c-top"></div>
-    <div id="slot-bottom" class="slot-card c-bottom"></div>
-    <div id="slot-left" class="slot-card c-left"></div>
-    <div id="slot-right" class="slot-card c-right"></div>
-  </div>
+  <div id="table-slots"><div id="slot-top" class="slot-card c-top"></div><div id="slot-bottom" class="slot-card c-bottom"></div><div id="slot-left" class="slot-card c-left"></div><div id="slot-right" class="slot-card c-right"></div></div>
 
   <div class="hand-container">
     <div id="hand-list" class="my-hand"></div>
-    <button id="playBtn" class="btn" style="margin-left:25px" onclick="handlePlay()">PLAY</button>
+    <button id="playBtn" class="btn" style="margin-left:20px" onclick="handlePlay()">PLAY</button>
   </div>
 </div>
 
@@ -95,7 +81,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-// Firebase initialization remains same as previous working version
 const firebaseConfig = {
   apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",
   authDomain: "mindi-game-93625.firebaseapp.com",
@@ -107,9 +92,18 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v12_mobile');
+const gameRef = db.ref('mindi_v13_final');
 let myId = 'u' + Math.floor(Math.random()*999);
 let mySlot = null;
+
+// The Reset Function
+async function nuclearReset() {
+    if(confirm("This will kick everyone out and clear the table. Continue?")) {
+        await gameRef.remove();
+        alert("Table cleared! Everyone can refresh and join again.");
+        location.reload();
+    }
+}
 
 async function joinGame() {
     const name = document.getElementById('userName').value || "Player";
@@ -119,13 +113,13 @@ async function joinGame() {
         await gameRef.set({ 
             started: false, 
             dealer: Math.floor(Math.random() * 4), 
-            players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} } 
+            players: { slot0:{id:"",name:""}, slot1:{id:"",name:""}, slot2:{id:"",name:""}, slot3:{id:"",name:""} } 
         });
         d = (await gameRef.once('value')).val();
     }
     let slot = -1;
     for(let i=0; i<4; i++) { if(!d.players['slot'+i].id) { slot = i; break; } }
-    if(slot === -1) return;
+    if(slot === -1) return alert("Table is full!");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id: myId, name: name});
     document.getElementById('lobby').classList.add('hidden');
@@ -139,24 +133,19 @@ function sync() {
 
         for(let i=0; i<4; i++) {
             const pos = getPos(i);
-            document.getElementById('p-'+pos).innerHTML = `<strong>${d.players['slot'+i].name || '...'}</strong>${d.dealer===i?' (D)':''}`;
+            const p = d.players['slot'+i];
+            document.getElementById('p-'+pos).innerHTML = `<strong>${p.name || '...'}</strong>${d.dealer===i?' (D)':''}`;
             document.getElementById('p-'+pos).classList.toggle('active', d.turn === i && d.started);
             const sEl = document.getElementById('slot-'+pos);
             if(!d.currentTrick?.['slot'+i]) sEl.innerHTML = '';
             else if(!sEl.innerHTML) sEl.appendChild(createCardUI(d.currentTrick['slot'+i]));
         }
 
-        // Hukm Box Logic
         const hBox = document.getElementById('hukm-box');
         if(d.hukmRevealed && d.hukmCard) {
-            hBox.innerHTML = '';
-            hBox.className = "hukm-card revealed-hukm";
+            hBox.innerHTML = ''; hBox.className = "hukm-card revealed-hukm";
             hBox.appendChild(createCardInner(d.hukmCard));
-        } else {
-            hBox.innerHTML = ""; // Card back showing
-            hBox.className = "hukm-card";
-            hBox.style.background = "linear-gradient(135deg, #a00 0%, #700 100%)";
-        }
+        } else { hBox.innerHTML = ""; hBox.className = "hukm-card"; hBox.style.background = "linear-gradient(135deg, #a00 0%, #700 100%)"; }
 
         document.getElementById('dealBtn').classList.toggle('hidden', !(mySlot === d.dealer && !d.started));
         document.getElementById('playBtn').disabled = (d.turn !== mySlot);
@@ -164,10 +153,8 @@ function sync() {
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
-            // Dealer cannot see their own Hukm card value either
             if(mySlot === d.dealer && c === d.hukmCard && !d.hukmRevealed && d.hands['slot'+mySlot].length > 1) {
                 el.classList.add('locked');
-                el.innerHTML = ""; 
             } else {
                 el.onclick = () => {
                     document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
@@ -185,7 +172,7 @@ function createCardInner(c) {
     const container = document.createElement('div');
     container.className = 'HD'.includes(suit) ? 'red' : '';
     container.style.display = 'contents';
-    container.innerHTML = `<div style="font-size:0.7rem">${val}</div><div style="font-size:1.2rem">${syms[suit]}</div><div style="transform:rotate(180deg); font-size:0.7rem">${val}</div>`;
+    container.innerHTML = `<div style="font-size:0.6rem">${val}</div><div style="font-size:1.1rem">${syms[suit]}</div><div style="transform:rotate(180deg); font-size:0.6rem">${val}</div>`;
     return container;
 }
 
@@ -203,23 +190,10 @@ async function dealNewGame() {
     deck.sort(() => Math.random() - 0.5);
     const hands = {};
     for(let i=0; i<4; i++) hands['slot'+i] = deck.splice(0, 13);
-    
     const snap = await gameRef.once('value');
     const d = snap.val();
-    const dealer = d.dealer;
-    // System picks the Hukm card from dealer's hand - Dealer doesn't know which one it is!
-    const hCard = hands['slot'+dealer][Math.floor(Math.random()*13)];
-
-    await gameRef.update({
-        started: true,
-        turn: (dealer + 1) % 4,
-        hands: hands,
-        currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""},
-        hukmCard: hCard,
-        hukmSuit: hCard.slice(-1),
-        hukmRevealed: false,
-        leadSuit: ""
-    });
+    const hCard = hands['slot'+d.dealer][Math.floor(Math.random()*13)];
+    await gameRef.update({ started: true, turn: (d.dealer + 1) % 4, hands: hands, currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""}, hukmCard: hCard, hukmSuit: hCard.slice(-1), hukmRevealed: false, leadSuit: "" });
 }
 
 async function handlePlay() {
@@ -232,60 +206,29 @@ async function handlePlay() {
     if(d.leadSuit && !card.endsWith(d.leadSuit)) {
         const hasLead = d.hands['slot'+mySlot].some(c => c.endsWith(d.leadSuit));
         if(hasLead) return alert("Follow Suit!");
-        if(!d.hukmRevealed) {
-            if(confirm("Cut with Trump? (Reveals Hukm)")) await gameRef.update({ hukmRevealed: true });
-        }
+        if(!d.hukmRevealed && confirm("Cut with Trump?")) await gameRef.update({ hukmRevealed: true });
     }
 
-    const h = d.hands['slot'+mySlot];
-    h.splice(sel.dataset.idx, 1);
-    const trick = d.currentTrick || {};
-    trick['slot'+mySlot] = card;
-
-    // Flying animation logic
-    if(card === d.hukmCard && mySlot === d.dealer) {
-        animateHukm(mySlot);
-    }
-
+    const h = d.hands['slot'+mySlot]; h.splice(sel.dataset.idx, 1);
+    const trick = d.currentTrick || {}; trick['slot'+mySlot] = card;
     let updates = { [`hands/slot${mySlot}`]: h, currentTrick: trick, turn: (d.turn + 1) % 4 };
     if(!d.leadSuit) updates.leadSuit = card.slice(-1);
 
     const played = Object.values(trick).filter(c => c !== "");
     if(played.length === 4) {
-        // Simple winner calculation
         const rankMap = {'A':14,'K':13,'Q':12,'J':11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
         let winS = 0, hi = -1;
         for(let i=0; i<4; i++) {
             const c = trick['slot'+i], s = c.slice(-1), r = c.slice(0,-1);
             let p = rankMap[r];
-            if(s === d.hukmSuit && d.hukmRevealed) p += 100;
-            else if(s !== d.leadSuit) p = 0;
+            if(s === d.hukmSuit && d.hukmRevealed) p += 100; else if(s !== d.leadSuit) p = 0;
             if(p > hi) { hi = p; winS = i; }
         }
         updates.turn = winS; updates.leadSuit = "";
         setTimeout(() => gameRef.update({ currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""} }), 1200);
-        
-        if(h.length === 0) {
-            updates.started = false;
-            updates.dealer = (d.dealer + 1) % 4;
-        }
+        if(h.length === 0) { updates.started = false; updates.dealer = (d.dealer + 1) % 4; }
     }
     await gameRef.update(updates);
-}
-
-function animateHukm(slot) {
-    const box = document.getElementById('hukm-box');
-    const target = document.getElementById('slot-bottom');
-    const rect = target.getBoundingClientRect();
-    const boxRect = box.getBoundingClientRect();
-    box.style.transition = "all 0.6s ease-in";
-    box.style.position = "fixed";
-    box.style.left = boxRect.left + "px";
-    box.style.top = boxRect.top + "px";
-    setTimeout(() => {
-        box.style.transform = `translate(${rect.left - boxRect.left}px, ${rect.top - boxRect.top}px) rotate(360deg)`;
-        box.style.opacity = "0";
-    }, 50);
 }
 </script>
 </body>
