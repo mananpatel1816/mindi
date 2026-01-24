@@ -3,73 +3,82 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Mindi - Fresh Start</title>
+<title>Mindi - Fixed Order & Blind Trump</title>
 <style>
   :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 52px; --card-h: 75px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); display: flex; align-items: center; justify-content: center; }
   
-  /* Reset Button Style */
-  .btn-nuclear { background: #ff3b30; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; margin-top: 20px; cursor: pointer; border: 2px solid rgba(255,255,255,0.3); }
+  /* Player Labels & Mindi Collection */
+  .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; }
+  .player { background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.75rem; transition: 0.3s; }
+  .active { border-color: var(--gold); box-shadow: 0 0 10px var(--gold); transform: scale(1.1); }
+  
+  .mindi-stack { display: flex; gap: 2px; min-height: 25px; }
+  .mindi-mini { width: 18px; height: 26px; background: white; border-radius: 2px; border: 1px solid #999; display: flex; align-items: center; justify-content: center; font-size: 0.4rem; font-weight: bold; color: black; }
 
-  .player { position: absolute; background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.75rem; z-index: 10; }
-  .active { border-color: var(--gold); box-shadow: 0 0 10px var(--gold); }
   .top { top: 10px; left: 50%; transform: translateX(-50%); }
   .bottom { bottom: 130px; left: 50%; transform: translateX(-50%); }
   .left { left: 10px; top: 45%; transform: translateY(-50%); }
   .right { right: 10px; top: 45%; transform: translateY(-50%); }
 
+  /* Hukm UI - Truly hidden */
   .hukm-indicator { position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 5px; border-radius: 8px; border: 1px solid var(--gold); z-index: 200; }
-  .hukm-card { width: 40px; height: 58px; background: linear-gradient(135deg, #a00 0%, #700 100%); border: 1.5px solid white; border-radius: 4px; margin: 3px auto; transition: 0.6s; }
-  .revealed-hukm { background: white !important; color: black; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; }
+  .hukm-card { width: 40px; height: 58px; background: #800; border: 1.5px solid #fff; border-radius: 4px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); position: relative; }
+  .hukm-card::after { content: 'M'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-style: italic; opacity: 0.3; font-size: 1.2rem; }
+  .revealed-hukm { background: white !important; color: black; font-weight: bold; display: flex !important; flex-direction: column; justify-content: space-between; padding: 3px; box-sizing: border-box; }
+  .revealed-hukm::after { content: none; }
 
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 5px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 3px; border: 1px solid #999; box-sizing: border-box; font-size: 0.8rem; }
-  .locked { filter: brightness(0.3); }
-  .locked::after { content: '?'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 1.2rem; }
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 5px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 3px; border: 1px solid #999; box-sizing: border-box; font-size: 0.8rem; position: relative; }
   .red { color: #d00; }
   
-  .slot-card { position: absolute; transition: 0.3s ease-out; }
+  /* The Secret Card - Completely Blacked Out */
+  .locked { background: #111 !important; border-color: #333 !important; }
+  .locked * { display: none !important; }
+  .locked::before { content: '🔒'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); filter: grayscale(1); font-size: 1rem; }
+
+  .slot-card { position: absolute; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .c-top { top: 80px; left: 50%; transform: translateX(-50%); }
   .c-bottom { bottom: 180px; left: 50%; transform: translateX(-50%); }
   .c-left { left: 100px; top: 45%; transform: translateY(-50%); }
   .c-right { right: 100px; top: 45%; transform: translateY(-50%); }
 
-  .hand-container { position: fixed; bottom: 0; width: 100%; height: 100px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .hand-container { position: fixed; bottom: 0; width: 100%; height: 100px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 100; }
   .my-hand { display: flex; gap: -32px; }
-  .my-hand .card { margin-left: -32px; cursor: pointer; transition: 0.2s; box-shadow: -2px 0 5px rgba(0,0,0,0.4); }
-  .my-hand .card.selected { transform: translateY(-20px); border: 2px solid #2979ff; z-index: 150; }
+  .my-hand .card { margin-left: -32px; cursor: pointer; transition: 0.2s; }
+  .my-hand .card.selected { transform: translateY(-20px); border: 2.5px solid #2979ff; z-index: 150; }
 
   .btn { background: var(--gold); color: black; border: none; padding: 10px 20px; border-radius: 15px; font-weight: bold; font-size: 0.85rem; }
-  .hidden { display: none !important; }
   .overlay { position: fixed; inset: 0; background: var(--dark); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 </style>
 </head>
 <body>
 
 <div id="lobby" class="overlay">
-  <h2 style="color:var(--gold); margin-bottom:5px;">MINDI LOBBY</h2>
-  <p id="player-count" style="font-size:0.8rem; color:#888;">Checking table...</p>
-  <input id="userName" placeholder="Your Name" style="padding:12px; border-radius:8px; width:180px; margin-bottom:10px; border:none;" />
-  <button class="btn" onclick="joinGame()">JOIN GAME</button>
-  
-  <button class="btn-nuclear" onclick="nuclearReset()">☢ NUCLEAR RESET</button>
-  <p style="font-size:0.6rem; color:#666; margin-top:10px; width:200px; text-align:center;">Use Nuclear Reset if the table is stuck or players can't join.</p>
+  <h2 style="color:var(--gold)">MINDI</h2>
+  <input id="userName" placeholder="Your Name" style="padding:12px; border-radius:8px; width:180px; margin-bottom:10px;" />
+  <button class="btn" onclick="joinGame()">JOIN</button>
+  <button style="margin-top:20px; background:none; border:none; color:#555; text-decoration:underline;" onclick="nuclearReset()">Reset Database</button>
 </div>
 
 <div class="felt">
   <div class="hukm-indicator">
-    <div style="font-size:0.5rem">HUKM</div>
     <div id="hukm-box" class="hukm-card"></div>
   </div>
 
-  <button id="dealBtn" class="btn hidden" style="position:absolute; top:40%" onclick="dealNewGame()">DEAL CARDS</button>
+  <button id="dealBtn" class="btn" style="position:absolute; top:40%; display:none" onclick="dealNewGame()">DEAL</button>
 
-  <div id="p-top" class="player top">...</div>
-  <div id="p-left" class="player left">...</div>
-  <div id="p-right" class="player right">...</div>
-  <div id="p-bottom" class="player bottom">YOU</div>
+  <div id="w-top" class="player-wrapper top"><div id="mindi-top" class="mindi-stack"></div><div id="p-top" class="player">...</div></div>
+  <div id="w-left" class="player-wrapper left"><div id="p-left" class="player">...</div><div id="mindi-left" class="mindi-stack"></div></div>
+  <div id="w-right" class="player-wrapper right"><div id="p-right" class="player">...</div><div id="mindi-right" class="mindi-stack"></div></div>
+  <div id="w-bottom" class="player-wrapper bottom"><div id="mindi-bottom" class="mindi-stack"></div><div id="p-bottom" class="player">YOU</div></div>
 
-  <div id="table-slots"><div id="slot-top" class="slot-card c-top"></div><div id="slot-bottom" class="slot-card c-bottom"></div><div id="slot-left" class="slot-card c-left"></div><div id="slot-right" class="slot-card c-right"></div></div>
+  <div id="table-slots">
+    <div id="slot-top" class="slot-card c-top"></div>
+    <div id="slot-bottom" class="slot-card c-bottom"></div>
+    <div id="slot-left" class="slot-card c-left"></div>
+    <div id="slot-right" class="slot-card c-right"></div>
+  </div>
 
   <div class="hand-container">
     <div id="hand-list" class="my-hand"></div>
@@ -92,37 +101,26 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v13_final');
+const gameRef = db.ref('mindi_v15_fixed');
 let myId = 'u' + Math.floor(Math.random()*999);
 let mySlot = null;
 
-// The Reset Function
-async function nuclearReset() {
-    if(confirm("This will kick everyone out and clear the table. Continue?")) {
-        await gameRef.remove();
-        alert("Table cleared! Everyone can refresh and join again.");
-        location.reload();
-    }
-}
+async function nuclearReset() { if(confirm("Clear Table?")) { await gameRef.remove(); location.reload(); } }
 
 async function joinGame() {
     const name = document.getElementById('userName').value || "Player";
     const snap = await gameRef.once('value');
     let d = snap.val();
     if(!d || !d.players) {
-        await gameRef.set({ 
-            started: false, 
-            dealer: Math.floor(Math.random() * 4), 
-            players: { slot0:{id:"",name:""}, slot1:{id:"",name:""}, slot2:{id:"",name:""}, slot3:{id:"",name:""} } 
-        });
+        await gameRef.set({ started: false, dealer: 0, players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} } });
         d = (await gameRef.once('value')).val();
     }
     let slot = -1;
     for(let i=0; i<4; i++) { if(!d.players['slot'+i].id) { slot = i; break; } }
-    if(slot === -1) return alert("Table is full!");
+    if(slot === -1) return alert("Full");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id: myId, name: name});
-    document.getElementById('lobby').classList.add('hidden');
+    document.getElementById('lobby').style.display = 'none';
     sync();
 }
 
@@ -131,30 +129,51 @@ function sync() {
         const d = snap.val(); if(!d) return;
         const getPos = (s) => { const rel = (s - mySlot + 4) % 4; return ['bottom', 'right', 'top', 'left'][rel]; };
 
+        // 1. Update Player Info & Mindi Displays
         for(let i=0; i<4; i++) {
             const pos = getPos(i);
-            const p = d.players['slot'+i];
-            document.getElementById('p-'+pos).innerHTML = `<strong>${p.name || '...'}</strong>${d.dealer===i?' (D)':''}`;
-            document.getElementById('p-'+pos).classList.toggle('active', d.turn === i && d.started);
+            const pEl = document.getElementById('p-'+pos);
+            pEl.innerHTML = `<strong>${d.players['slot'+i].name || '...'}</strong>${d.dealer===i?' (D)':''}`;
+            pEl.classList.toggle('active', d.turn === i && d.started);
+            
+            // Show collected Mindis next to the winning player
+            const mStack = document.getElementById('mindi-'+pos);
+            mStack.innerHTML = '';
+            const list = d.mindis?.['slot'+i] || [];
+            list.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'mindi-mini';
+                const suit = c.slice(-1);
+                const sym = {H:'♥', D:'♦', S:'♠', C:'♣'}[suit];
+                card.innerHTML = `10<br>${sym}`;
+                if('HD'.includes(suit)) card.style.color = 'red';
+                mStack.appendChild(card);
+            });
+
             const sEl = document.getElementById('slot-'+pos);
             if(!d.currentTrick?.['slot'+i]) sEl.innerHTML = '';
             else if(!sEl.innerHTML) sEl.appendChild(createCardUI(d.currentTrick['slot'+i]));
         }
 
+        // 2. Blind Hukm Logic
         const hBox = document.getElementById('hukm-box');
         if(d.hukmRevealed && d.hukmCard) {
             hBox.innerHTML = ''; hBox.className = "hukm-card revealed-hukm";
             hBox.appendChild(createCardInner(d.hukmCard));
-        } else { hBox.innerHTML = ""; hBox.className = "hukm-card"; hBox.style.background = "linear-gradient(135deg, #a00 0%, #700 100%)"; }
+        } else {
+            hBox.innerHTML = ""; hBox.className = "hukm-card";
+            hBox.style.background = "#800";
+        }
 
-        document.getElementById('dealBtn').classList.toggle('hidden', !(mySlot === d.dealer && !d.started));
+        document.getElementById('dealBtn').style.display = (mySlot === d.dealer && !d.started) ? 'block' : 'none';
         document.getElementById('playBtn').disabled = (d.turn !== mySlot);
 
+        // 3. Hand Display (Truly Black out the Trump for dealer)
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
             if(mySlot === d.dealer && c === d.hukmCard && !d.hukmRevealed && d.hands['slot'+mySlot].length > 1) {
-                el.classList.add('locked');
+                el.classList.add('locked'); // Completely black/hidden
             } else {
                 el.onclick = () => {
                     document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
@@ -172,7 +191,7 @@ function createCardInner(c) {
     const container = document.createElement('div');
     container.className = 'HD'.includes(suit) ? 'red' : '';
     container.style.display = 'contents';
-    container.innerHTML = `<div style="font-size:0.6rem">${val}</div><div style="font-size:1.1rem">${syms[suit]}</div><div style="transform:rotate(180deg); font-size:0.6rem">${val}</div>`;
+    container.innerHTML = `<div>${val}</div><div style="font-size:1rem">${syms[suit]}</div><div style="transform:rotate(180deg)">${val}</div>`;
     return container;
 }
 
@@ -184,7 +203,7 @@ function createCardUI(c) {
 }
 
 async function dealNewGame() {
-    const suits = ['S', 'H', 'D', 'C'], ranks = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
+    const suits = ['S','H','D','C'], ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
     let deck = [];
     suits.forEach(s => ranks.forEach(r => deck.push(r+s)));
     deck.sort(() => Math.random() - 0.5);
@@ -193,7 +212,18 @@ async function dealNewGame() {
     const snap = await gameRef.once('value');
     const d = snap.val();
     const hCard = hands['slot'+d.dealer][Math.floor(Math.random()*13)];
-    await gameRef.update({ started: true, turn: (d.dealer + 1) % 4, hands: hands, currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""}, hukmCard: hCard, hukmSuit: hCard.slice(-1), hukmRevealed: false, leadSuit: "" });
+    // Clockwise check: Turn is ALWAYS dealer + 1
+    await gameRef.update({ 
+        started: true, 
+        turn: (d.dealer + 1) % 4, 
+        hands: hands, 
+        currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""}, 
+        hukmCard: hCard, 
+        hukmSuit: hCard.slice(-1), 
+        hukmRevealed: false, 
+        leadSuit: "",
+        mindis: {slot0:[], slot1:[], slot2:[], slot3:[]}
+    });
 }
 
 async function handlePlay() {
@@ -211,6 +241,8 @@ async function handlePlay() {
 
     const h = d.hands['slot'+mySlot]; h.splice(sel.dataset.idx, 1);
     const trick = d.currentTrick || {}; trick['slot'+mySlot] = card;
+    
+    // CLOCKWISE TURN LOGIC: (Current Turn + 1) % 4
     let updates = { [`hands/slot${mySlot}`]: h, currentTrick: trick, turn: (d.turn + 1) % 4 };
     if(!d.leadSuit) updates.leadSuit = card.slice(-1);
 
@@ -224,6 +256,14 @@ async function handlePlay() {
             if(s === d.hukmSuit && d.hukmRevealed) p += 100; else if(s !== d.leadSuit) p = 0;
             if(p > hi) { hi = p; winS = i; }
         }
+        
+        // Mindi Collection: Add to the specific player's stack
+        const tens = played.filter(c => c.startsWith('10'));
+        if(tens.length > 0) {
+            const currentMindis = d.mindis?.['slot'+winS] || [];
+            updates[`mindis/slot${winS}`] = [...currentMindis, ...tens];
+        }
+
         updates.turn = winS; updates.leadSuit = "";
         setTimeout(() => gameRef.update({ currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""} }), 1200);
         if(h.length === 0) { updates.started = false; updates.dealer = (d.dealer + 1) % 4; }
