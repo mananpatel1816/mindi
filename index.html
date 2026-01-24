@@ -3,54 +3,53 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Mindi - iPhone Vertical</title>
+<title>Mindi - Strict 4-Player</title>
 <style>
-  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 52px; --card-h: 75px; }
+  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 50px; --card-h: 72px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
-  
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); overflow: hidden; }
 
-  /* Collapsible Scoreboard (Hamburger Menu) */
+  /* Hamburger Menu */
   #menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1000; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); border-radius: 5px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
   #menu-toggle span { width: 20px; height: 2px; background: var(--gold); display: block; }
   
-  .scoreboard { position: fixed; top: 60px; right: 15px; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 160px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+  .scoreboard { position: fixed; top: 60px; right: 15px; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 180px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
   .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; border-bottom: 1px solid #333; padding-bottom: 4px; }
   .team-names { font-size: 0.75rem; color: #ccc; }
   .score-val { color: var(--gold); font-weight: bold; font-size: 1.2rem; }
 
-  /* Player Positions Optimized for Portrait */
-  .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 10; width: 100px; }
-  .player { background: rgba(0,0,0,0.8); padding: 5px 10px; border-radius: 15px; border: 1px solid #555; font-size: 0.75rem; width: 100%; text-align: center; }
-  .active { border-color: var(--gold); box-shadow: 0 0 12px var(--gold); }
+  /* Player Positions */
+  .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 10; width: 90px; }
+  .player { background: rgba(0,0,0,0.8); padding: 5px; border-radius: 12px; border: 1px solid #555; font-size: 0.7rem; width: 100%; text-align: center; }
+  .active { border-color: var(--gold); box-shadow: 0 0 10px var(--gold); }
   
-  .mindi-stack { display: flex; gap: 2px; min-height: 25px; justify-content: center; flex-wrap: wrap; }
-  .mindi-mini { width: 18px; height: 26px; background: white; border-radius: 2px; font-size: 0.5rem; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+  .mindi-stack { display: flex; gap: 2px; min-height: 20px; justify-content: center; }
+  .mindi-mini { width: 16px; height: 22px; background: white; border-radius: 2px; font-size: 0.45rem; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-  .top { top: 50px; left: 50%; transform: translateX(-50%); }
-  .bottom { bottom: 250px; left: 50%; transform: translateX(-50%); } /* Shifted up to clear UI */
-  .left { left: 10px; top: 35%; transform: translateY(-50%); }
-  .right { right: 10px; top: 35%; transform: translateY(-50%); }
+  .top { top: 60px; left: 50%; transform: translateX(-50%); }
+  .bottom { bottom: 240px; left: 50%; transform: translateX(-50%); }
+  .left { left: 10px; top: 40%; transform: translateY(-50%); }
+  .right { right: 10px; top: 40%; transform: translateY(-50%); }
 
-  /* Table Center */
+  /* Center Slots */
   .slot-card { position: absolute; transition: 0.3s ease-out; width: var(--card-w); height: var(--card-h); }
-  .c-top { top: 140px; left: 50%; transform: translateX(-50%); }
-  .c-bottom { bottom: 340px; left: 50%; transform: translateX(-50%); }
-  .c-left { left: 80px; top: 38%; transform: translateY(-50%); }
-  .c-right { right: 80px; top: 38%; transform: translateY(-50%); }
+  .c-top { top: 150px; left: 50%; transform: translateX(-50%); }
+  .c-bottom { bottom: 320px; left: 50%; transform: translateX(-50%); }
+  .c-left { left: 85px; top: 40%; transform: translateY(-50%); }
+  .c-right { right: 85px; top: 40%; transform: translateY(-50%); }
 
-  /* Control Panel: Play Button ABOVE Cards */
-  .controls { position: fixed; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; background: linear-gradient(transparent, rgba(0,0,0,0.8) 40%); pointer-events: none; }
-  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 14px 40px; border-radius: 30px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4); margin-bottom: 15px; }
-  .btn:disabled { background: #555; color: #888; box-shadow: none; }
+  /* Bottom Controls */
+  .controls { position: fixed; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; background: linear-gradient(transparent, rgba(0,0,0,0.9) 50%); pointer-events: none; }
+  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 900; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.4); margin-bottom: 15px; }
+  .btn:disabled { background: #444; color: #777; box-shadow: none; }
 
-  /* Card Hand: Proper Fanning */
-  .hand-container { pointer-events: auto; display: flex; justify-content: center; width: 100%; height: 100px; padding-left: 30px; }
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 4px; border: 1px solid #444; box-sizing: border-box; font-size: 0.9rem; position: relative; }
-  .my-hand .card { margin-left: -28px; transition: 0.2s; box-shadow: -2px 0 5px rgba(0,0,0,0.3); }
-  .my-hand .card.selected { transform: translateY(-30px); border: 3px solid #007bff; z-index: 100 !important; margin-right: 15px; }
+  /* Hand Container */
+  .hand-container { pointer-events: auto; display: flex; justify-content: center; width: 100%; height: 80px; }
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 5px; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 3px; border: 1px solid #666; box-sizing: border-box; font-size: 0.8rem; position: relative; }
+  .my-hand .card { margin-left: -32px; transition: 0.2s; box-shadow: -2px 0 5px rgba(0,0,0,0.4); }
+  .my-hand .card.selected { transform: translateY(-25px); border: 2px solid #007bff; z-index: 100 !important; margin-right: 10px; }
   
-  .suit-large { font-size: 1.4rem; line-height: 1; }
+  .suit-large { font-size: 1.2rem; line-height: 1; }
   .red { color: #e00; }
   .hukm-indicator { position: fixed; top: 15px; left: 15px; z-index: 200; }
   .hukm-card { width: 35px; height: 50px; background: #900; border: 2px solid #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: white; }
@@ -60,9 +59,10 @@
 <body>
 
 <div id="lobby" class="overlay">
-  <h2 style="color:var(--gold)">MINDI MOBILE</h2>
+  <h2 style="color:var(--gold)">MINDI TABLE</h2>
+  <div id="waiting-msg" style="margin-bottom:10px; font-size:0.8rem; color:#aaa">Enter name to join</div>
   <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:220px; margin-bottom:15px; border:none;" />
-  <button class="btn" onclick="joinGame()">JOIN TABLE</button>
+  <button class="btn" onclick="joinGame()">SIT DOWN</button>
 </div>
 
 <div id="menu-toggle" onclick="toggleScoreboard()">
@@ -73,16 +73,17 @@
   <div style="font-size:0.7rem; color:var(--gold); text-align:center; margin-bottom:10px;">SETS WON (4-0)</div>
   <div class="score-row"><div id="names-a" class="team-names">Team A</div><span id="score-a" class="score-val">0</span></div>
   <div class="score-row"><div id="names-b" class="team-names">Team B</div><span id="score-b" class="score-val">0</span></div>
-  <button class="btn-draw" style="width:100%; background:#333; color:white; border:none; padding:8px; border-radius:5px; margin-top:10px;" onclick="callMutualDraw()">END DRAW</button>
+  <button class="btn-draw" style="width:100%; background:#333; color:white; border:none; padding:8px; border-radius:5px; margin-top:10px;" onclick="callMutualDraw()">MUTUAL END (DRAW)</button>
 </div>
 
 <div class="felt">
   <div class="hukm-indicator"><div id="hukm-box" class="hukm-card">M</div></div>
-  <button id="dealBtn" class="btn" style="position:absolute; top:45%; left:50%; transform:translateX(-50%); z-index:500; display:none;" onclick="dealNewGame()">DEAL</button>
+  
+  <button id="dealBtn" class="btn" style="position:absolute; top:45%; left:50%; transform:translateX(-50%); z-index:500; display:none;" onclick="dealNewGame()">DEAL CARDS</button>
 
-  <div id="w-top" class="player-wrapper top"><div id="mindi-top" class="mindi-stack"></div><div id="p-top" class="player">...</div></div>
-  <div id="w-left" class="player-wrapper left"><div id="p-left" class="player">...</div><div id="mindi-left" class="mindi-stack"></div></div>
-  <div id="w-right" class="player-wrapper right"><div id="p-right" class="player">...</div><div id="mindi-right" class="mindi-stack"></div></div>
+  <div id="w-top" class="player-wrapper top"><div id="mindi-top" class="mindi-stack"></div><div id="p-top" class="player">Empty</div></div>
+  <div id="w-left" class="player-wrapper left"><div id="p-left" class="player">Empty</div><div id="mindi-left" class="mindi-stack"></div></div>
+  <div id="w-right" class="player-wrapper right"><div id="p-right" class="player">Empty</div><div id="mindi-right" class="mindi-stack"></div></div>
   <div id="w-bottom" class="player-wrapper bottom"><div id="mindi-bottom" class="mindi-stack"></div><div id="p-bottom" class="player">YOU</div></div>
 
   <div id="table-slots">
@@ -111,30 +112,16 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v24_vertical');
+const gameRef = db.ref('mindi_v25_strict');
 
-let myId = localStorage.getItem('mindi_uid') || ('u' + Math.floor(Math.random()*9999));
-localStorage.setItem('mindi_uid', myId);
+// ID is unique to THIS TAB only, so you can open 4 tabs on 1 PC
+let myId = 'u' + Math.floor(Math.random()*1000000); 
 let mySlot = null;
 
 function toggleScoreboard() {
   const p = document.getElementById('scorePanel');
   p.style.display = (p.style.display === 'block') ? 'none' : 'block';
 }
-
-(async function checkSession() {
-    const snap = await gameRef.once('value');
-    const d = snap.val();
-    if (d && d.players) {
-        for(let i=0; i<4; i++) {
-            if(d.players['slot'+i].id === myId) {
-                mySlot = i;
-                document.getElementById('lobby').style.display = 'none';
-                sync(); return;
-            }
-        }
-    }
-})();
 
 async function joinGame() {
     const name = document.getElementById('userName').value || "Player";
@@ -146,7 +133,7 @@ async function joinGame() {
     }
     let slot = -1;
     for(let i=0; i<4; i++) { if(!d.players['slot'+i].id) { slot = i; break; } }
-    if(slot === -1) return alert("Full");
+    if(slot === -1) return alert("Table is full!");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id: myId, name: name});
     document.getElementById('lobby').style.display = 'none';
@@ -157,10 +144,18 @@ function sync() {
     gameRef.on('value', snap => {
         const d = snap.val(); if(!d) return;
         
-        document.getElementById('names-a').innerText = `${d.players.slot0.name || 'P1'} & ${d.players.slot2.name || 'P3'}`;
-        document.getElementById('names-b').innerText = `${d.players.slot1.name || 'P2'} & ${d.players.slot3.name || 'P4'}`;
+        const n0 = d.players.slot0.name || "P1";
+        const n1 = d.players.slot1.name || "P2";
+        const n2 = d.players.slot2.name || "P3";
+        const n3 = d.players.slot3.name || "P4";
+        
+        document.getElementById('names-a').innerText = `${n0} & ${n2}`;
+        document.getElementById('names-b').innerText = `${n1} & ${n3}`;
         document.getElementById('score-a').innerText = d.matchScore?.A || 0;
         document.getElementById('score-b').innerText = d.matchScore?.B || 0;
+
+        let playerCount = 0;
+        for(let i=0; i<4; i++) if(d.players['slot'+i].id) playerCount++;
 
         const getPos = (s) => { 
             const rel = (s - mySlot + 4) % 4; 
@@ -169,8 +164,9 @@ function sync() {
 
         for(let i=0; i<4; i++) {
             const pos = getPos(i); const p = d.players['slot'+i];
-            document.getElementById('p-'+pos).innerHTML = `<strong>${p.name || '...'}</strong>${d.dealer===i?' (D)':''}`;
+            document.getElementById('p-'+pos).innerHTML = `<strong>${p.name || 'Empty'}</strong>${d.dealer===i?' (D)':''}`;
             document.getElementById('p-'+pos).classList.toggle('active', d.turn === i && d.started);
+            
             const mStack = document.getElementById('mindi-'+pos); mStack.innerHTML = '';
             (d.mindis?.['slot'+i] || []).forEach(c => {
                 const card = document.createElement('div'); card.className = 'mindi-mini';
@@ -188,14 +184,15 @@ function sync() {
             hBox.innerHTML = ''; hBox.appendChild(createCardInner(d.hukmCard));
         } else { hBox.innerHTML = "M"; }
 
-        document.getElementById('dealBtn').style.display = (mySlot === d.dealer && !d.started) ? 'block' : 'none';
+        // DEAL BUTTON LOGIC: Dealer must be you AND 4 players must be seated
+        document.getElementById('dealBtn').style.display = (mySlot === d.dealer && !d.started && playerCount === 4) ? 'block' : 'none';
         document.getElementById('playBtn').disabled = (d.turn !== mySlot);
 
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
             if(mySlot === d.dealer && c === d.hukmCard && !d.hukmRevealed && d.hands['slot'+mySlot].length > 1) {
-                el.style.opacity = "0.3";
+                el.style.opacity = "0.3"; // Hukm is locked
             } else {
                 el.onclick = () => {
                     document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
