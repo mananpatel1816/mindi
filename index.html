@@ -3,55 +3,56 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Mindi - High Vis</title>
+<title>Mindi - iPhone Pro Edition</title>
 <style>
-  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 60px; --card-h: 90px; }
+  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 70px; --card-h: 100px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); overflow: hidden; }
 
   /* Hamburger Menu */
-  #menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1000; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); border-radius: 5px; padding: 10px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
-  #menu-toggle span { width: 22px; height: 2px; background: var(--gold); display: block; }
+  #menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1000; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); border-radius: 5px; padding: 10px; cursor: pointer; }
+  #menu-toggle span { width: 22px; height: 2px; background: var(--gold); display: block; margin: 4px 0; }
   
-  .scoreboard { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 200px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+  .scoreboard { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 200px; display: none; }
   .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; border-bottom: 1px solid #333; padding-bottom: 4px; }
-  .team-names { font-size: 0.8rem; color: #ccc; }
   .score-val { color: var(--gold); font-weight: bold; font-size: 1.3rem; }
 
   /* Player Positions */
-  .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; width: 100px; }
-  .player { background: rgba(0,0,0,0.8); padding: 6px; border-radius: 12px; border: 1px solid #555; font-size: 0.75rem; width: 100%; text-align: center; }
-  .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); background: rgba(0,0,0,1); }
+  .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; width: 110px; }
+  .player { background: rgba(0,0,0,0.8); padding: 6px; border-radius: 12px; border: 1px solid #555; font-size: 0.8rem; width: 100%; text-align: center; }
+  .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
   
-  /* Mindi stack (Captured 10s) */
-  .mindi-stack { display: flex; gap: 2px; min-height: 25px; justify-content: center; }
-  .mindi-mini { width: 20px; height: 28px; background: white; border-radius: 3px; font-size: 0.6rem; color: black; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid #999; }
-
   .top { top: 60px; left: 50%; transform: translateX(-50%); }
-  .bottom { bottom: 260px; left: 50%; transform: translateX(-50%); }
-  .left { left: 10px; top: 42%; transform: translateY(-50%); }
-  .right { right: 10px; top: 42%; transform: translateY(-50%); }
+  .bottom { bottom: 280px; left: 50%; transform: translateX(-50%); }
+  .left { left: 10px; top: 40%; transform: translateY(-50%); }
+  .right { right: 10px; top: 40%; transform: translateY(-50%); }
 
-  /* Center Playing Area */
-  .slot-card { position: absolute; transition: 0.3s ease-out; width: var(--card-w); height: var(--card-h); }
-  .c-top { top: 160px; left: 50%; transform: translateX(-50%); }
-  .c-bottom { bottom: 360px; left: 50%; transform: translateX(-50%); }
-  .c-left { left: 90px; top: 42%; transform: translateY(-50%); }
-  .c-right { right: 90px; top: 42%; transform: translateY(-50%); }
-
-  /* Card Hand styling */
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 7px; font-weight: 900; display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 4px; border: 1px solid #444; box-sizing: border-box; position: relative; box-shadow: 2px 2px 8px rgba(0,0,0,0.4); }
-  .card .rank { font-size: 1.1rem; line-height: 1; margin-top: 2px; }
-  .card .suit-main { font-size: 2.2rem; line-height: 1; margin-bottom: 5px; }
-  
-  .my-hand { display: flex; justify-content: center; width: 100%; height: 110px; padding-left: 40px; }
-  .my-hand .card { margin-left: -38px; cursor: pointer; transition: 0.2s; }
-  .my-hand .card.selected { transform: translateY(-35px); border: 3px solid #007bff; z-index: 500 !important; margin-right: 15px; }
+  /* Card UI with Corner Info */
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 8px; border: 1px solid #444; position: relative; box-shadow: 2px 2px 10px rgba(0,0,0,0.4); pointer-events: auto; flex-shrink: 0; }
+  .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; padding: 2px; }
+  .card .top-left { top: 2px; left: 2px; }
+  .card .bot-right { bottom: 2px; right: 2px; transform: rotate(180deg); }
+  .card .suit-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; }
+  .card .rank { font-size: 1.1rem; font-weight: 900; }
+  .card .suit-mini { font-size: 0.9rem; }
   .red { color: #d00; }
 
-  .controls { position: fixed; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; background: linear-gradient(transparent, rgba(0,0,0,0.9) 60%); pointer-events: none; }
-  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 15px 45px; border-radius: 30px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); margin-bottom: 20px; }
-  .btn:disabled { background: #444; color: #777; box-shadow: none; }
+  /* Playing Area */
+  .slot-card { position: absolute; transition: 0.3s ease-out; width: var(--card-w); height: var(--card-h); }
+  .c-top { top: 180px; left: 50%; transform: translateX(-50%); }
+  .c-bottom { bottom: 380px; left: 50%; transform: translateX(-50%); }
+  .c-left { left: 100px; top: 40%; transform: translateY(-50%); }
+  .c-right { right: 100px; top: 40%; transform: translateY(-50%); }
+
+  /* Hand Area */
+  .controls { position: fixed; bottom: 0; width: 100%; padding-bottom: 50px; display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 1000; }
+  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 18px 50px; border-radius: 40px; font-weight: 900; font-size: 1.2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.6); margin-bottom: 20px; }
+  .btn:disabled { background: #444; color: #777; }
+
+  .my-hand { pointer-events: auto; display: flex; width: 95%; justify-content: center; height: 120px; }
+  .my-hand .card { margin-left: -45px; transition: transform 0.2s; }
+  .my-hand .card:first-child { margin-left: 0; }
+  .my-hand .card.selected { transform: translateY(-40px); z-index: 500 !important; border: 3px solid #007bff; }
 
   .hukm-indicator { position: fixed; top: 15px; left: 15px; z-index: 200; }
   .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; font-weight: bold; }
@@ -61,9 +62,8 @@
 <body>
 
 <div id="lobby" class="overlay">
-  <h1 style="color:var(--gold); margin-bottom:5px;">MINDI</h1>
-  <p id="waiting-msg" style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">Waiting for 4 players...</p>
-  <input id="userName" placeholder="Enter Your Name" style="padding:15px; border-radius:10px; width:240px; margin-bottom:15px; border:none; font-size:1.1rem;" />
+  <h1 style="color:var(--gold)">MINDI</h1>
+  <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:240px; margin-bottom:15px; font-size:1.1rem;" />
   <button class="btn" onclick="joinGame()">JOIN TABLE</button>
 </div>
 
@@ -72,21 +72,19 @@
 </div>
 
 <div class="scoreboard" id="scorePanel">
-  <div style="font-size:0.8rem; color:var(--gold); text-align:center; margin-bottom:12px; font-weight:bold;">SCOREBOARD (4-0 ONLY)</div>
-  <div class="score-row"><div id="names-a" class="team-names">Team A</div><span id="score-a" class="score-val">0</span></div>
-  <div class="score-row"><div id="names-b" class="team-names">Team B</div><span id="score-b" class="score-val">0</span></div>
-  <button style="width:100%; background:#d00; color:white; border:none; padding:10px; border-radius:8px; margin-top:15px; font-weight:bold;" onclick="callMutualDraw()">RESET / DRAW</button>
+  <div class="score-row"><span>Adi & Manan</span><span id="score-a" class="score-val">0</span></div>
+  <div class="score-row"><span>Opponents</span><span id="score-b" class="score-val">0</span></div>
+  <button style="width:100%; padding:10px; margin-top:10px;" onclick="callMutualDraw()">RESET</button>
 </div>
 
 <div class="felt">
   <div class="hukm-indicator"><div id="hukm-box" class="hukm-card">M</div></div>
-  
-  <button id="dealBtn" class="btn" style="position:absolute; top:45%; left:50%; transform:translateX(-50%); z-index:500; display:none;" onclick="dealNewGame()">DEAL CARDS</button>
+  <button id="dealBtn" class="btn" style="position:absolute; top:45%; left:50%; transform:translateX(-50%); z-index:2100; display:none;" onclick="dealNewGame()">DEAL</button>
 
-  <div id="w-top" class="player-wrapper top"><div id="mindi-top" class="mindi-stack"></div><div id="p-top" class="player">...</div></div>
-  <div id="w-left" class="player-wrapper left"><div id="p-left" class="player">...</div><div id="mindi-left" class="mindi-stack"></div></div>
-  <div id="w-right" class="player-wrapper right"><div id="p-right" class="player">...</div><div id="mindi-right" class="mindi-stack"></div></div>
-  <div id="w-bottom" class="player-wrapper bottom"><div id="mindi-bottom" class="mindi-stack"></div><div id="p-bottom" class="player">YOU</div></div>
+  <div id="w-top" class="player-wrapper top"><div id="p-top" class="player">...</div></div>
+  <div id="w-left" class="player-wrapper left"><div id="p-left" class="player">...</div></div>
+  <div id="w-right" class="player-wrapper right"><div id="p-right" class="player">...</div></div>
+  <div id="w-bottom" class="player-wrapper bottom"><div id="p-bottom" class="player">YOU</div></div>
 
   <div id="table-slots">
     <div id="slot-top" class="slot-card c-top"></div><div id="slot-bottom" class="slot-card c-bottom"></div>
@@ -114,9 +112,11 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v26_hivis');
+const gameRef = db.ref('mindi_v27_final_pro');
 
-let myId = 'u' + Math.floor(Math.random()*1000000); 
+// REFRESH PERSISTENCE
+let myId = localStorage.getItem('mindi_id_v27') || ('u' + Math.floor(Math.random()*1000000));
+localStorage.setItem('mindi_id_v27', myId);
 let mySlot = null;
 
 function toggleScoreboard() {
@@ -133,50 +133,58 @@ async function joinGame() {
         d = (await gameRef.once('value')).val();
     }
     let slot = -1;
-    for(let i=0; i<4; i++) { if(!d.players['slot'+i].id) { slot = i; break; } }
-    if(slot === -1) return alert("Table Full");
+    for(let i=0; i<4; i++) {
+        if(d.players['slot'+i].id === myId) { slot = i; break; }
+        if(slot === -1 && !d.players['slot'+i].id) slot = i;
+    }
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id: myId, name: name});
     document.getElementById('lobby').style.display = 'none';
     sync();
 }
 
+// Auto-join if ID exists in database
+(async () => {
+    const snap = await gameRef.once('value');
+    const d = snap.val();
+    if(d && d.players) {
+        for(let i=0; i<4; i++) {
+            if(d.players['slot'+i].id === myId) {
+                mySlot = i;
+                document.getElementById('lobby').style.display = 'none';
+                sync(); break;
+            }
+        }
+    }
+})();
+
 function sync() {
     gameRef.on('value', snap => {
         const d = snap.val(); if(!d) return;
-        document.getElementById('names-a').innerText = `${d.players.slot0.name || 'P1'} & ${d.players.slot2.name || 'P3'}`;
-        document.getElementById('names-b').innerText = `${d.players.slot1.name || 'P2'} & ${d.players.slot3.name || 'P4'}`;
         document.getElementById('score-a').innerText = d.matchScore?.A || 0;
         document.getElementById('score-b').innerText = d.matchScore?.B || 0;
-
-        let playerCount = 0;
-        for(let i=0; i<4; i++) if(d.players['slot'+i].id) playerCount++;
 
         const getPos = (s) => { 
             const rel = (s - mySlot + 4) % 4; 
             return ['bottom', 'left', 'top', 'right'][rel]; 
         };
 
+        let playerCount = 0;
         for(let i=0; i<4; i++) {
             const pos = getPos(i); const p = d.players['slot'+i];
+            if(p.id) playerCount++;
             document.getElementById('p-'+pos).innerHTML = `<strong>${p.name || 'Empty'}</strong>${d.dealer===i?' (D)':''}`;
             document.getElementById('p-'+pos).classList.toggle('active', d.turn === i && d.started);
-            const mStack = document.getElementById('mindi-'+pos); mStack.innerHTML = '';
-            (d.mindis?.['slot'+i] || []).forEach(c => {
-                const card = document.createElement('div'); card.className = 'mindi-mini';
-                card.innerHTML = `10${{H:'♥', D:'♦', S:'♠', C:'♣'}[c.slice(-1)]}`;
-                if('HD'.includes(c.slice(-1))) card.style.color = 'red';
-                mStack.appendChild(card);
-            });
+            
             const sEl = document.getElementById('slot-'+pos);
             if(!d.currentTrick?.['slot'+i]) sEl.innerHTML = '';
             else if(!sEl.innerHTML) sEl.appendChild(createCardUI(d.currentTrick['slot'+i]));
         }
 
-        const hBox = document.getElementById('hukm-box');
         if(d.hukmRevealed) {
-            hBox.innerHTML = ''; hBox.appendChild(createCardInner(d.hukmCard));
-        } else { hBox.innerHTML = "M"; }
+            document.getElementById('hukm-box').innerHTML = '';
+            document.getElementById('hukm-box').appendChild(createCardInner(d.hukmCard));
+        } else { document.getElementById('hukm-box').innerHTML = "M"; }
 
         document.getElementById('dealBtn').style.display = (mySlot === d.dealer && !d.started && playerCount === 4) ? 'block' : 'none';
         document.getElementById('playBtn').disabled = (d.turn !== mySlot);
@@ -184,14 +192,10 @@ function sync() {
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
-            if(mySlot === d.dealer && c === d.hukmCard && !d.hukmRevealed && d.hands['slot'+mySlot].length > 1) {
-                el.style.opacity = "0.3";
-            } else {
-                el.onclick = () => {
-                    document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
-                    el.classList.add('selected'); el.dataset.val = c; el.dataset.idx = idx;
-                };
-            }
+            el.onclick = () => {
+                document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
+                el.classList.add('selected'); el.dataset.val = c; el.dataset.idx = idx;
+            };
             hand.appendChild(el);
         });
     });
@@ -200,10 +204,14 @@ function sync() {
 function createCardInner(c) {
     const suit = c.slice(-1), val = c.slice(0, -1);
     const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
+    const isRed = 'HD'.includes(suit) ? 'red' : '';
     const container = document.createElement('div');
-    if('HD'.includes(suit)) container.className = 'red';
+    container.className = isRed;
     container.style.display = 'contents';
-    container.innerHTML = `<span class="rank">${val}</span><span class="suit-main">${syms[suit]}</span>`;
+    container.innerHTML = `
+        <div class="corner top-left"><span class="rank">${val}</span><span class="suit-mini">${syms[suit]}</span></div>
+        <div class="suit-center">${syms[suit]}</div>
+        <div class="corner bot-right"><span class="rank">${val}</span><span class="suit-mini">${syms[suit]}</span></div>`;
     return container;
 }
 
@@ -260,11 +268,10 @@ async function handlePlay() {
         setTimeout(() => gameRef.update(updates), 1000);
     } else { await gameRef.update(updates); }
 }
+
 async function callMutualDraw() {
-    if(!confirm("Reset Game?")) return;
-    const snap = await gameRef.once('value'); const d = snap.val();
+    if(!confirm("Reset table?")) return;
     await gameRef.update({ started: false, currentTrick: null, hands: null, hukmRevealed: false });
-    toggleScoreboard();
 }
 </script>
 </body>
