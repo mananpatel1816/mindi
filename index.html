@@ -3,70 +3,64 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Mindi - High Visibility</title>
+<title>Mindi - Teammate Alignment</title>
 <style>
   :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 58px; --card-h: 82px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); display: flex; align-items: center; justify-content: center; }
   
-  /* Player wrappers & Mindi displays */
+  /* Player wrappers - SWAPPED LEFT AND RIGHT FOR CLOCKWISE FLOW */
   .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 10; width: 120px; }
-  .player { background: rgba(0,0,0,0.85); padding: 6px 14px; border-radius: 20px; border: 1.5px solid #555; font-size: 0.85rem; transition: 0.3s; width: 100%; text-align: center; box-sizing: border-box; }
+  .player { background: rgba(0,0,0,0.85); padding: 6px 14px; border-radius: 20px; border: 1.5px solid #555; font-size: 0.85rem; width: 100%; text-align: center; box-sizing: border-box; }
   .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); transform: scale(1.05); }
   
-  /* Mindi Collection Display */
   .mindi-stack { display: flex; gap: 3px; min-height: 30px; justify-content: center; flex-wrap: wrap; }
-  .mindi-mini { width: 22px; height: 32px; background: white; border-radius: 3px; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: bold; color: black; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+  .mindi-mini { width: 22px; height: 32px; background: white; border-radius: 3px; border: 1px solid #999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: bold; color: black; }
 
   .top { top: 15px; left: 50%; transform: translateX(-50%); }
   .bottom { bottom: 150px; left: 50%; transform: translateX(-50%); }
-  .left { left: 10px; top: 45%; transform: translateY(-50%); }
-  .right { right: 10px; top: 45%; transform: translateY(-50%); }
+  /* Swapped: Left is now the first player after dealer (clockwise) */
+  .left { left: 15px; top: 45%; transform: translateY(-50%); }
+  .right { right: 15px; top: 45%; transform: translateY(-50%); }
 
-  /* Hukm UI */
   .hukm-indicator { position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.6); padding: 6px; border-radius: 10px; border: 1px solid var(--gold); z-index: 200; }
-  .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 5px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: rgba(255,255,255,0.2); font-weight: bold; }
+  .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: rgba(255,255,255,0.4); }
   .revealed-hukm { background: white !important; color: black; font-weight: bold; display: flex !important; flex-direction: column; justify-content: space-between; padding: 4px; box-sizing: border-box; }
 
-  /* High-Visibility Card Design */
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; border: 1px solid #777; box-sizing: border-box; font-size: 1rem; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px; border: 1px solid #777; box-sizing: border-box; font-size: 1rem; position: relative; }
   .suit-large { font-size: 1.8rem; line-height: 1; }
   .red { color: #e00; }
   
-  /* The Dealer's Secret Card */
   .locked { background: #222 !important; border: 2px dashed #444 !important; }
   .locked::after { content: '🔒'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 1.5rem; }
 
   .slot-card { position: absolute; transition: 0.4s ease-out; }
-  .c-top { top: 100px; left: 50%; transform: translateX(-50%); }
-  .c-bottom { bottom: 220px; left: 50%; transform: translateX(-50%); }
-  .c-left { left: 140px; top: 45%; transform: translateY(-50%); }
-  .c-right { right: 140px; top: 45%; transform: translateY(-50%); }
+  .c-top { top: 110px; left: 50%; transform: translateX(-50%); }
+  .c-bottom { bottom: 230px; left: 50%; transform: translateX(-50%); }
+  .c-left { left: 150px; top: 45%; transform: translateY(-50%); }
+  .c-right { right: 150px; top: 45%; transform: translateY(-50%); }
 
-  .hand-container { position: fixed; bottom: 0; width: 100%; height: 130px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding-bottom: 10px; }
-  .my-hand { display: flex; gap: -20px; } /* Reduced overlap for better visibility */
-  .my-hand .card { margin-left: -25px; cursor: pointer; transition: transform 0.2s, margin 0.2s; }
-  .my-hand .card.selected { transform: translateY(-35px) scale(1.1); border: 3px solid #2979ff; z-index: 150; margin-right: 15px; }
+  .hand-container { position: fixed; bottom: 0; width: 100%; height: 130px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .my-hand { display: flex; }
+  .my-hand .card { margin-left: -30px; cursor: pointer; transition: 0.2s; }
+  .my-hand .card.selected { transform: translateY(-35px); border: 3px solid #2979ff; z-index: 150; margin-right: 15px; }
 
-  .btn { background: var(--gold); color: black; border: none; padding: 12px 24px; border-radius: 20px; font-weight: 800; font-size: 1rem; box-shadow: 0 4px 0 #b8860b; active { transform: translateY(2px); box-shadow: 0 2px 0 #b8860b; } }
+  .btn { background: var(--gold); color: black; border: none; padding: 12px 24px; border-radius: 20px; font-weight: 800; font-size: 1rem; cursor: pointer; }
   .overlay { position: fixed; inset: 0; background: var(--dark); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 </style>
 </head>
 <body>
 
 <div id="lobby" class="overlay">
-  <h1 style="color:var(--gold); margin-bottom:20px;">MINDI GLOBAL</h1>
-  <input id="userName" placeholder="Enter Nickname" style="padding:15px; border-radius:10px; width:220px; font-size:1.1rem; border:none; margin-bottom:15px;" />
-  <button class="btn" onclick="joinGame()">ENTER TABLE</button>
-  <button style="margin-top:40px; background:none; border:none; color:#444; text-decoration:underline;" onclick="nuclearReset()">Reset All Data</button>
+  <h1 style="color:var(--gold)">MINDI TABLE</h1>
+  <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:220px; margin-bottom:15px;" />
+  <button class="btn" onclick="joinGame()">SIT DOWN</button>
+  <button style="margin-top:40px; color:#444; background:none; border:none; text-decoration:underline;" onclick="nuclearReset()">Wipe Database</button>
 </div>
 
 <div class="felt">
-  <div class="hukm-indicator">
-    <div id="hukm-box" class="hukm-card">M</div>
-  </div>
-
-  <button id="dealBtn" class="btn" style="position:absolute; top:45%; display:none; z-index:50;" onclick="dealNewGame()">DEAL CARDS</button>
+  <div class="hukm-indicator"><div id="hukm-box" class="hukm-card">M</div></div>
+  <button id="dealBtn" class="btn" style="position:absolute; top:45%; display:none;" onclick="dealNewGame()">DEAL</button>
 
   <div id="w-top" class="player-wrapper top"><div id="mindi-top" class="mindi-stack"></div><div id="p-top" class="player">...</div></div>
   <div id="w-left" class="player-wrapper left"><div id="p-left" class="player">...</div><div id="mindi-left" class="mindi-stack"></div></div>
@@ -90,6 +84,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
+// Same Firebase configuration as previous version
 const firebaseConfig = {
   apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",
   authDomain: "mindi-game-93625.firebaseapp.com",
@@ -101,23 +96,23 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v16_vis');
+const gameRef = db.ref('mindi_v17_teams');
 let myId = 'u' + Math.floor(Math.random()*999);
 let mySlot = null;
 
-async function nuclearReset() { if(confirm("Wipe everything?")) { await gameRef.remove(); location.reload(); } }
+async function nuclearReset() { if(confirm("Reset all?")) { await gameRef.remove(); location.reload(); } }
 
 async function joinGame() {
     const name = document.getElementById('userName').value || "Player";
     const snap = await gameRef.once('value');
     let d = snap.val();
-    if(!d || !d.players) {
-        await gameRef.set({ started: false, dealer: 0, players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} } });
+    if(!d) {
+        await gameRef.set({ started: false, dealer: Math.floor(Math.random()*4), players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} } });
         d = (await gameRef.once('value')).val();
     }
     let slot = -1;
     for(let i=0; i<4; i++) { if(!d.players['slot'+i].id) { slot = i; break; } }
-    if(slot === -1) return alert("Room Full");
+    if(slot === -1) return alert("Full");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id: myId, name: name});
     document.getElementById('lobby').style.display = 'none';
@@ -127,7 +122,13 @@ async function joinGame() {
 function sync() {
     gameRef.on('value', snap => {
         const d = snap.val(); if(!d) return;
-        const getPos = (s) => { const rel = (s - mySlot + 4) % 4; return ['bottom', 'right', 'top', 'left'][rel]; };
+        
+        // CLOCKWISE MAP: 0=Bottom, 1=Left, 2=Top, 3=Right
+        // This ensures Teammates (0&2 and 1&3) are across from each other
+        const getPos = (s) => { 
+            const rel = (s - mySlot + 4) % 4; 
+            return ['bottom', 'left', 'top', 'right'][rel]; 
+        };
 
         for(let i=0; i<4; i++) {
             const pos = getPos(i);
@@ -152,13 +153,10 @@ function sync() {
         }
 
         const hBox = document.getElementById('hukm-box');
-        if(d.hukmRevealed && d.hukmCard) {
+        if(d.hukmRevealed) {
             hBox.innerHTML = ''; hBox.className = "hukm-card revealed-hukm";
             hBox.appendChild(createCardInner(d.hukmCard));
-        } else {
-            hBox.innerHTML = "M"; hBox.className = "hukm-card";
-            hBox.style.background = "#900";
-        }
+        } else { hBox.innerHTML = "M"; hBox.className = "hukm-card"; }
 
         document.getElementById('dealBtn').style.display = (mySlot === d.dealer && !d.started) ? 'block' : 'none';
         document.getElementById('playBtn').disabled = (d.turn !== mySlot);
@@ -167,8 +165,7 @@ function sync() {
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
             if(mySlot === d.dealer && c === d.hukmCard && !d.hukmRevealed && d.hands['slot'+mySlot].length > 1) {
-                el.classList.add('locked');
-                el.innerHTML = "";
+                el.classList.add('locked'); el.innerHTML = "";
             } else {
                 el.onclick = () => {
                     document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
@@ -186,11 +183,7 @@ function createCardInner(c) {
     const container = document.createElement('div');
     container.className = 'HD'.includes(suit) ? 'red' : '';
     container.style.display = 'contents';
-    container.innerHTML = `
-        <div style="align-self: flex-start;">${val}</div>
-        <div class="suit-large">${syms[suit]}</div>
-        <div style="align-self: flex-end; transform:rotate(180deg)">${val}</div>
-    `;
+    container.innerHTML = `<div style="align-self:flex-start">${val}</div><div class="suit-large">${syms[suit]}</div><div style="align-self:flex-end; transform:rotate(180deg)">${val}</div>`;
     return container;
 }
 
@@ -233,13 +226,12 @@ async function handlePlay() {
 
     if(d.leadSuit && !card.endsWith(d.leadSuit)) {
         const hasLead = d.hands['slot'+mySlot].some(c => c.endsWith(d.leadSuit));
-        if(hasLead) return alert("Must follow suit!");
-        if(!d.hukmRevealed && confirm("Cut with Trump?")) await gameRef.update({ hukmRevealed: true });
+        if(hasLead) return alert("Follow Suit!");
+        if(!d.hukmRevealed && confirm("Reveal Hukm?")) await gameRef.update({ hukmRevealed: true });
     }
 
     const h = d.hands['slot'+mySlot]; h.splice(sel.dataset.idx, 1);
     const trick = d.currentTrick || {}; trick['slot'+mySlot] = card;
-    
     let updates = { [`hands/slot${mySlot}`]: h, currentTrick: trick, turn: (d.turn + 1) % 4 };
     if(!d.leadSuit) updates.leadSuit = card.slice(-1);
 
@@ -253,13 +245,8 @@ async function handlePlay() {
             if(s === d.hukmSuit && d.hukmRevealed) p += 100; else if(s !== d.leadSuit) p = 0;
             if(p > hi) { hi = p; winS = i; }
         }
-        
         const tens = played.filter(c => c.startsWith('10'));
-        if(tens.length > 0) {
-            const currentMindis = d.mindis?.['slot'+winS] || [];
-            updates[`mindis/slot${winS}`] = [...currentMindis, ...tens];
-        }
-
+        if(tens.length > 0) updates[`mindis/slot${winS}`] = [...(d.mindis?.[`slot${winS}`] || []), ...tens];
         updates.turn = winS; updates.leadSuit = "";
         setTimeout(() => gameRef.update({ currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""} }), 1200);
         if(h.length === 0) { updates.started = false; updates.dealer = (d.dealer + 1) % 4; }
