@@ -90,6 +90,7 @@
   <div class="score-row"><span id="team-b-label">Team B</span><span id="score-b">0</span></div>
   <div class="score-row" style="color:var(--gold); font-size: 0.8rem; margin-top: 5px;">MINDIS ON TABLE: <span id="mindi-count">0/4</span></div>
   <button style="width:100%; margin-top:10px; background:#444; color:white; border:none; cursor:pointer; padding:8px; border-radius:4px;" onclick="resetMatch()">RESET MATCH</button>
+  <button style="width:100%; margin-top:5px; background:#8B0000; color:white; border:none; cursor:pointer; padding:8px; border-radius:4px; font-weight:bold;" onclick="clearDatabase()">CLEAR DATABASE</button>
 </div>
 
 <div class="felt">
@@ -477,6 +478,21 @@ async function resetMatch() {
     await gameRef.remove(); 
     location.reload(); 
   } 
+}
+
+async function clearDatabase() {
+  if(confirm("⚠️ WARNING: This will DELETE ALL DATA from the database!\n\nThis includes:\n- All players\n- All scores\n- All active games\n\nAre you absolutely sure?")) {
+    if(confirm("This action CANNOT be undone. Clear database?")) {
+      try {
+        await gameRef.remove();
+        sessionStorage.removeItem('mindi_uid');
+        alert("Database cleared successfully!");
+        location.reload();
+      } catch(error) {
+        alert("Error clearing database: " + error.message);
+      }
+    }
+  }
 }
 
 (async () => { 
