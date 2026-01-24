@@ -3,58 +3,67 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Mindi - Pro Edition</title>
+<title>Mindi Pro - Final Build</title>
 <style>
   :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 75px; --card-h: 108px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); display: flex; align-items: center; justify-content: center; }
 
+  /* UI Elements */
   #menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1000; background: rgba(0,0,0,0.4); border: 1.5px solid var(--gold); border-radius: 6px; padding: 8px; cursor: pointer; }
   #menu-toggle span { width: 20px; height: 2px; background: var(--gold); display: block; margin: 4px 0; }
   
   .scoreboard { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.9); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 200px; display: none; }
   .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #444; padding-bottom: 4px; }
   
-  /* Player Labels */
   .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 10; width: 130px; }
-  .player { background: rgba(0,0,0,0.8); padding: 6px 15px; border-radius: 20px; border: 1.5px solid #444; font-size: 0.8rem; width: fit-content; text-align: center; font-weight: bold; white-space: nowrap; }
+  .player { background: rgba(0,0,0,0.8); padding: 6px 15px; border-radius: 20px; border: 1.5px solid #444; font-size: 0.8rem; width: fit-content; text-align: center; font-weight: bold; transition: 0.3s; }
   .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); background: #000; color: var(--gold); }
   
+  /* Positions from Screenshot */
   .top { top: 40px; }
-  .bottom { bottom: 240px; } /* Adjusted to fit above hand */
+  .bottom { bottom: 260px; }
   .left { left: 20px; }
   .right { right: 20px; }
 
-  /* Card UI */
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; border: 1px solid #999; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.4); pointer-events: auto; user-select: none; }
+  /* Mindi Captured Icons */
+  .mindi-captured { display: flex; gap: 3px; margin-top: 5px; height: 20px; }
+  .mini-mindi { width: 14px; height: 20px; background: white; border: 1px solid #000; border-radius: 2px; color: #d00; font-size: 9px; font-weight: 900; text-align: center; line-height: 20px; }
+
+  /* Card Styles */
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; border: 1px solid #999; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.4); pointer-events: auto; }
+  .card.card-back { background: linear-gradient(135deg, #1a5e3a 0%, #2d8a57 50%, #1a5e3a 100%); border: 2px solid var(--gold); }
+  .card.card-back::after { content: 'M'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; font-weight: bold; color: var(--gold); }
   .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 0.9; padding: 3px; font-weight: bold; font-size: 0.9rem; }
   .card .top-left { top: 2px; left: 2px; }
   .card .bot-right { bottom: 2px; right: 2px; transform: rotate(180deg); }
   .card .suit-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.2rem; }
   .red { color: #d00; }
 
-  /* Table Slots - Exact placement from your screenshot */
+  /* Table Placement */
   .slot-card { position: absolute; width: var(--card-w); height: var(--card-h); transition: 0.3s ease-out; }
-  .c-top { transform: translate(0, -70px); }
-  .c-bottom { transform: translate(0, 70px); }
-  .c-left { transform: translate(-90px, 0); }
-  .c-right { transform: translate(90px, 0); }
+  .c-top { transform: translate(0, -75px); }
+  .c-bottom { transform: translate(0, 75px); }
+  .c-left { transform: translate(-95px, 0); }
+  .c-right { transform: translate(95px, 0); }
 
-  /* Hand Container */
+  /* Hand controls */
   .controls { position: fixed; bottom: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 1000; pointer-events: none; }
-  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 12px 40px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4); margin-bottom: 15px; cursor: pointer; text-transform: uppercase; }
-  .btn:disabled { background: #555; color: #888; box-shadow: none; cursor: default; }
+  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 14px 45px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4); margin-bottom: 15px; cursor: pointer; }
+  .btn:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
 
   .my-hand { pointer-events: auto; display: flex; justify-content: center; width: 95%; height: 120px; }
   .my-hand .card { margin-left: -35px; transition: 0.2s; cursor: pointer; }
   .my-hand .card:first-child { margin-left: 0; }
   .my-hand .card.selected { transform: translateY(-30px); border: 3px solid #007bff; z-index: 100 !important; }
+  .my-hand .card.hidden-hukm { cursor: not-allowed; opacity: 0.7; }
 
   .hukm-indicator { position: fixed; top: 15px; left: 15px; z-index: 200; }
-  .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+  .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
   
   .overlay { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  input { padding: 15px; border-radius: 8px; border: none; width: 260px; margin-bottom: 15px; font-size: 1rem; outline: none; }
+  .round-end-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  input { padding: 15px; border-radius: 8px; border: none; width: 260px; margin-bottom: 15px; font-size: 1rem; }
 </style>
 </head>
 <body>
@@ -66,24 +75,28 @@
   <button class="btn" onclick="joinGame()">Join Table</button>
 </div>
 
+<div id="round-end-overlay" class="round-end-overlay">
+  <h2 id="winner-text" style="color:var(--gold); font-size: 3rem; margin-bottom: 10px;"></h2>
+  <p id="reason-text" style="font-size: 1.2rem;"></p>
+</div>
+
 <div id="menu-toggle" onclick="toggleScoreboard()"><span></span><span></span><span></span></div>
 
 <div class="scoreboard" id="scorePanel">
-  <div class="score-row"><span id="team-a-label">Team 1/3</span><span id="score-a">0</span></div>
-  <div class="score-row"><span id="team-b-label">Team 2/4</span><span id="score-b">0</span></div>
-  <div class="score-row" style="color:var(--gold); font-size: 0.8rem; margin-top: 5px;">MINDIS: <span id="mindi-count">0/4</span></div>
-  <button style="width:100%; margin-top:10px; padding:5px; background:#444; color:white; border:none; cursor:pointer;" onclick="resetMatch()">RESET MATCH</button>
+  <div class="score-row"><span id="team-a-label">Team A</span><span id="score-a">0</span></div>
+  <div class="score-row"><span id="team-b-label">Team B</span><span id="score-b">0</span></div>
+  <div class="score-row" style="color:var(--gold); font-size: 0.8rem; margin-top: 5px;">MINDIS ON TABLE: <span id="mindi-count">0/4</span></div>
+  <button style="width:100%; margin-top:10px; background:#444; color:white; border:none; cursor:pointer; padding:8px; border-radius:4px;" onclick="resetMatch()">RESET MATCH</button>
 </div>
 
 <div class="felt">
   <div class="hukm-indicator"><div id="hukm-box" class="hukm-card">M</div></div>
-  
   <button id="dealBtn" class="btn" style="position:absolute; z-index:2100; display:none;" onclick="dealNewGame()">DEAL CARDS</button>
   
-  <div id="p-top" class="player-wrapper top"><div class="player">...</div></div>
-  <div id="p-left" class="player-wrapper left"><div class="player">...</div></div>
-  <div id="p-right" class="player-wrapper right"><div class="player">...</div></div>
-  <div id="p-bottom" class="player-wrapper bottom"><div class="player">YOU</div></div>
+  <div id="p-top" class="player-wrapper top"><div class="player">...</div><div class="mindi-captured"></div></div>
+  <div id="p-left" class="player-wrapper left"><div class="player">...</div><div class="mindi-captured"></div></div>
+  <div id="p-right" class="player-wrapper right"><div class="player">...</div><div class="mindi-captured"></div></div>
+  <div id="p-bottom" class="player-wrapper bottom"><div class="player">YOU</div><div class="mindi-captured"></div></div>
 
   <div id="table-slots" style="position:relative; width:1px; height:1px;">
     <div id="slot-top" class="slot-card c-top"></div>
@@ -112,19 +125,33 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v40_ui_matched');
+const gameRef = db.ref('mindi_final_v51');
 
 let myId = sessionStorage.getItem('mindi_uid') || 'u'+Math.random().toString(36).substr(2, 9);
 sessionStorage.setItem('mindi_uid', myId);
 let mySlot = null;
 
-function toggleScoreboard() { const p = document.getElementById('scorePanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; }
+function toggleScoreboard() { 
+  const p = document.getElementById('scorePanel'); 
+  p.style.display = p.style.display === 'block' ? 'none' : 'block'; 
+}
 
 async function joinGame() {
-    const name = document.getElementById('userName').value || "Player";
-    const team = document.getElementById('teamName').value || "Team";
+    const name = document.getElementById('userName').value.trim() || "Player";
+    const team = document.getElementById('teamName').value.trim() || "Team";
     const snap = await gameRef.once('value');
-    let d = snap.val() || { started:false, dealer:0, matchScore:{A:0, B:0}, players:{slot0:{id:""},slot1:{id:""},slot2:{id:""},slot3:{id:""}} };
+    let d = snap.val() || { 
+      started: false, 
+      dealer: 0, 
+      matchScore: {A:0, B:0}, 
+      players: {
+        slot0: {id:"", name:"", teamName:""},
+        slot1: {id:"", name:"", teamName:""},
+        slot2: {id:"", name:"", teamName:""},
+        slot3: {id:"", name:"", teamName:""}
+      }
+    };
+    
     if(!snap.val()) await gameRef.set(d);
     
     let slot = -1;
@@ -133,7 +160,7 @@ async function joinGame() {
         if(slot===-1 && !d.players['slot'+i].id) slot = i; 
     }
     
-    if(slot===-1) return alert("Full");
+    if(slot===-1) return alert("Table is full!");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id:myId, name:name, teamName:team});
     document.getElementById('lobby').style.display='none';
@@ -142,79 +169,202 @@ async function joinGame() {
 
 function sync() {
     gameRef.on('value', snap => {
-        const d = snap.val(); if(!d) return;
+        const d = snap.val(); 
+        if(!d || !d.players) return;
         
-        document.getElementById('team-a-label').innerText = `${d.players.slot0.teamName || '1'}/${d.players.slot2.teamName || '3'}`;
-        document.getElementById('team-b-label').innerText = `${d.players.slot1.teamName || '2'}/${d.players.slot3.teamName || '4'}`;
-        document.getElementById('score-a').innerText = d.matchScore.A;
-        document.getElementById('score-b').innerText = d.matchScore.B;
+        document.getElementById('team-a-label').innerText = `${d.players.slot0.teamName || 'T1'}/${d.players.slot2.teamName || 'T3'}`;
+        document.getElementById('team-b-label').innerText = `${d.players.slot1.teamName || 'T2'}/${d.players.slot3.teamName || 'T4'}`;
+        document.getElementById('score-a').innerText = d.matchScore?.A || 0;
+        document.getElementById('score-b').innerText = d.matchScore?.B || 0;
         
-        let mCount = (d.mindis?.slot0?.length||0) + (d.mindis?.slot1?.length||0) + (d.mindis?.slot2?.length||0) + (d.mindis?.slot3?.length||0);
-        document.getElementById('mindi-count').innerText = `${mCount}/4`;
+        const mTotal = (d.mindis?.slot0?.length||0) + (d.mindis?.slot1?.length||0) + (d.mindis?.slot2?.length||0) + (d.mindis?.slot3?.length||0);
+        document.getElementById('mindi-count').innerText = `${mTotal}/4`;
         
         const getPos = (s) => ['bottom', 'left', 'top', 'right'][(s-mySlot+4)%4];
         let pCount = 0;
         for(let i=0; i<4; i++) {
             const pos = getPos(i), p = d.players['slot'+i];
             if(p.id) pCount++;
-            const el = document.getElementById('p-'+pos).querySelector('.player');
+            const pWrapper = document.getElementById('p-'+pos);
+            const el = pWrapper.querySelector('.player');
             el.innerHTML = `${p.name || '...'}${d.dealer===i?' (D)':''}`;
             el.classList.toggle('active', d.turn===i && d.started);
             
+            const capturedBox = pWrapper.querySelector('.mindi-captured');
+            const count = (d.mindis?.['slot'+i]?.length || 0);
+            capturedBox.innerHTML = '';
+            for(let j=0; j<count; j++) capturedBox.innerHTML += '<div class="mini-mindi">10</div>';
+
             const sEl = document.getElementById('slot-'+pos);
-            if(!d.currentTrick?.['slot'+i]) sEl.innerHTML = '';
-            else if(!sEl.innerHTML) sEl.appendChild(createCardUI(d.currentTrick['slot'+i]));
+            if(!d.currentTrick?.['slot'+i]) {
+              sEl.innerHTML = '';
+            } else if(!sEl.innerHTML || sEl.querySelector('.card')?.dataset?.card !== d.currentTrick['slot'+i]) {
+              sEl.innerHTML = '';
+              const cardEl = createCardUI(d.currentTrick['slot'+i]);
+              cardEl.dataset.card = d.currentTrick['slot'+i];
+              sEl.appendChild(cardEl);
+            }
         }
         
         const hBox = document.getElementById('hukm-box');
-        hBox.innerHTML = d.hukmRevealed ? '' : 'M';
-        if(d.hukmRevealed) hBox.appendChild(createCardInner(d.hukmCard));
+        if(!d.hukmRevealed) {
+          hBox.innerHTML = 'M';
+        } else if(!hBox.dataset.revealed || hBox.dataset.card !== d.hukmCard) {
+          hBox.innerHTML = '';
+          hBox.appendChild(createCardInner(d.hukmCard));
+          hBox.dataset.revealed = 'true';
+          hBox.dataset.card = d.hukmCard;
+        }
         
         document.getElementById('dealBtn').style.display = (mySlot===d.dealer && !d.started && pCount===4) ? 'block' : 'none';
         document.getElementById('playBtn').disabled = (d.turn !== mySlot || !d.started);
         
-        const hand = document.getElementById('hand-list'); hand.innerHTML = '';
-        (d.hands?.['slot'+mySlot] || []).sort((a,b)=>a.slice(-1).localeCompare(b.slice(-1))).forEach((c, idx) => {
-            const el = createCardUI(c);
-            el.onclick = () => { 
-                document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected')); 
-                el.classList.add('selected'); el.dataset.val=c; el.dataset.idx=idx; 
-            };
-            hand.appendChild(el);
-        });
+        const hand = document.getElementById('hand-list'); 
+        const currentHand = (d.hands?.['slot'+mySlot] || []).sort((a,b)=>a.slice(-1).localeCompare(b.slice(-1)));
+        const existingCards = Array.from(hand.children).map(c => c.dataset.val);
+        
+        if(JSON.stringify(currentHand) !== JSON.stringify(existingCards)) {
+          hand.innerHTML = '';
+          currentHand.forEach((c, idx) => {
+              let el;
+              const isHiddenHukm = (c === 'HUKM_HIDDEN' && mySlot === d.dealer && !d.hukmRevealed);
+              
+              if(isHiddenHukm) {
+                el = createCardBack();
+                el.dataset.val = c;
+                el.dataset.idx = idx;
+                el.classList.add('hidden-hukm');
+                
+                // Only allow selecting if it's the last card
+                const nonHukmCards = currentHand.filter(card => card !== 'HUKM_HIDDEN');
+                if(nonHukmCards.length === 0) {
+                  el.classList.remove('hidden-hukm');
+                  el.style.cursor = 'pointer';
+                  el.onclick = () => { 
+                    document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected')); 
+                    el.classList.add('selected');
+                  };
+                } else {
+                  el.onclick = () => alert("You cannot play the hidden Hukm card until it's your last card!");
+                }
+              } else {
+                el = createCardUI(c);
+                el.dataset.val = c;
+                el.dataset.idx = idx;
+                el.onclick = () => { 
+                    document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected')); 
+                    el.classList.add('selected');
+                };
+              }
+              
+              hand.appendChild(el);
+          });
+        }
+
+        const overlay = document.getElementById('round-end-overlay');
+        if(d.roundResult && d.roundResult.active) {
+            document.getElementById('winner-text').innerText = d.roundResult.winner || '';
+            document.getElementById('reason-text').innerText = d.roundResult.reason || '';
+            overlay.style.display = 'flex';
+        } else { 
+          overlay.style.display = 'none'; 
+        }
     });
 }
 
 function createCardInner(c) {
     const s = c.slice(-1), v = c.slice(0,-1), syms = {H:'♥',D:'♦',S:'♠',C:'♣'};
-    const div = document.createElement('div'); div.className = 'HD'.includes(s)?'red':''; div.style.display='contents';
+    const div = document.createElement('div'); 
+    div.className = 'HD'.includes(s)?'red':''; 
+    div.style.display='contents';
     div.innerHTML = `<div class="corner top-left"><span>${v}</span><small>${syms[s]}</small></div><div class="suit-center">${syms[s]}</div><div class="corner bot-right"><span>${v}</span><small>${syms[s]}</small></div>`;
     return div;
 }
 
-function createCardUI(c) { const el=document.createElement('div'); el.className='card'; if(c) el.appendChild(createCardInner(c)); return el; }
+function createCardUI(c) { 
+  const el=document.createElement('div'); 
+  el.className='card'; 
+  if(c) el.appendChild(createCardInner(c)); 
+  return el; 
+}
+
+function createCardBack() {
+  const el = document.createElement('div');
+  el.className = 'card card-back';
+  return el;
+}
 
 async function dealNewGame() {
     const suits=['S','H','D','C'], ranks=['A','K','Q','J','10','9','8','7','6','5','4','3','2'], deck=[];
-    suits.forEach(s=>ranks.forEach(r=>deck.push(r+s))); deck.sort(()=>Math.random()-0.5);
-    const hands={}; for(let i=0; i<4; i++) hands['slot'+i]=deck.splice(0,13);
+    suits.forEach(s=>ranks.forEach(r=>deck.push(r+s))); 
+    deck.sort(()=>Math.random()-0.5);
+    
+    const hands={}; 
+    for(let i=0; i<4; i++) hands['slot'+i]=deck.splice(0,13);
+    
     const d=(await gameRef.once('value')).val();
     const hIdx = Math.floor(Math.random()*13);
     const hCard = hands['slot'+d.dealer].splice(hIdx,1)[0];
-    await gameRef.update({ started:true, turn:(d.dealer+1)%4, hands, currentTrick:{slot0:"",slot1:"",slot2:"",slot3:""}, hukmCard:hCard, hukmSuit:hCard.slice(-1), hukmRevealed:false, leadSuit:"", mindis:{slot0:[],slot1:[],slot2:[],slot3:[]}, totalTricksWon:{slot0:0,slot1:0,slot2:0,slot3:0} });
+    
+    // Replace the hukm card with a placeholder in dealer's hand
+    hands['slot'+d.dealer].push('HUKM_HIDDEN');
+    
+    await gameRef.update({ 
+      started: true, 
+      turn: (d.dealer+1)%4, 
+      hands, 
+      currentTrick: {slot0:"",slot1:"",slot2:"",slot3:""}, 
+      hukmCard: hCard, 
+      hukmSuit: hCard.slice(-1), 
+      hukmRevealed: false, 
+      leadSuit: "", 
+      mindis: {slot0:[],slot1:[],slot2:[],slot3:[]}, 
+      totalTricksWon: {slot0:0,slot1:0,slot2:0,slot3:0}, 
+      roundResult: {active:false} 
+    });
 }
 
 async function handlePlay() {
-    const sel = document.querySelector('.selected'); if(!sel) return;
-    const d = (await gameRef.once('value')).val(), card = sel.dataset.val;
+    const sel = document.querySelector('.selected'); 
+    if(!sel) return alert("Please select a card!");
+    
+    const d = (await gameRef.once('value')).val();
+    if(!d || d.turn !== mySlot) return;
+    
+    let card = sel.dataset.val;
     const idx = parseInt(sel.dataset.idx);
+    
+    // Check if trying to play hidden hukm card when not last card
+    if(card === 'HUKM_HIDDEN' && mySlot === d.dealer && !d.hukmRevealed) {
+      const nonHukmCards = (d.hands['slot'+mySlot] || []).filter(c => c !== 'HUKM_HIDDEN');
+      if(nonHukmCards.length > 0) {
+        return alert("You cannot play the hidden Hukm card until it's your last card!");
+      }
+      // If it's the last card, reveal it and play it
+      card = d.hukmCard;
+      await gameRef.update({ hukmRevealed: true });
+    }
+    
     if(d.leadSuit && !card.endsWith(d.leadSuit)) {
-        if(d.hands['slot'+mySlot].some(c=>c.endsWith(d.leadSuit))) return alert("Follow Suit!");
+        if(d.hands['slot'+mySlot].some(c=>c !== 'HUKM_HIDDEN' && c.endsWith(d.leadSuit))) {
+          return alert("You must follow suit!");
+        }
         if(!d.hukmRevealed) {
-            if(confirm("Reveal Hukm?")) {
-                const h = d.hands['slot'+d.dealer]; h.push(d.hukmCard);
-                await gameRef.update({ hukmRevealed:true, [`hands/slot${d.dealer}`]:h });
-                const d2 = (await gameRef.once('value')).val(); processPlay(card, idx, d2); return;
+            if(confirm("Cannot follow suit. Reveal Hukm card?")) {
+                const h = [...(d.hands['slot'+d.dealer] || [])];
+                // Replace HUKM_HIDDEN with actual card
+                const hiddenIdx = h.indexOf('HUKM_HIDDEN');
+                if(hiddenIdx !== -1) h[hiddenIdx] = d.hukmCard;
+                
+                await gameRef.update({ 
+                  hukmRevealed: true, 
+                  [`hands/slot${d.dealer}`]: h 
+                });
+                const d2 = (await gameRef.once('value')).val(); 
+                processPlay(card, idx, d2); 
+                return;
+            } else {
+              return;
             }
         }
     }
@@ -222,15 +372,33 @@ async function handlePlay() {
 }
 
 async function processPlay(card, idx, d) {
-    const hand = d.hands['slot'+mySlot]; hand.splice(idx,1);
-    const trick = d.currentTrick || {}; trick['slot'+mySlot]=card;
-    let updates = { [`hands/slot${mySlot}`]:hand, currentTrick:trick, turn:(d.turn+1)%4 };
+    const hand = [...(d.hands['slot'+mySlot] || [])];
+    
+    // If playing the hidden hukm as last card, use actual card value
+    if(hand[idx] === 'HUKM_HIDDEN') {
+      card = d.hukmCard;
+    }
+    
+    hand.splice(idx, 1);
+    
+    const trick = {...(d.currentTrick || {})}; 
+    trick['slot'+mySlot] = card;
+    
+    let updates = { 
+      [`hands/slot${mySlot}`]: hand, 
+      currentTrick: trick, 
+      turn: (d.turn+1)%4 
+    };
+    
     if(!d.leadSuit) updates.leadSuit = card.slice(-1);
+    
     const played = Object.values(trick).filter(c=>c!=="");
-    if(played.length===4) {
+    
+    if(played.length === 4) {
         const rankMap={'A':14,'K':13,'Q':12,'J':11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
         let winS=0, hi=-1;
         const freshD = (await gameRef.once('value')).val();
+        
         for(let i=0; i<4; i++) {
             const c=trick['slot'+i], s=c.slice(-1), r=c.slice(0,-1);
             let p = rankMap[r];
@@ -238,32 +406,81 @@ async function processPlay(card, idx, d) {
             else if(s !== freshD.leadSuit) p = 0;
             if(p > hi) { hi = p; winS = i; }
         }
+        
         const tens = played.filter(c=>c.startsWith('10'));
         updates[`mindis/slot${winS}`] = [...(freshD.mindis?.[`slot${winS}`]||[]), ...tens];
         updates[`totalTricksWon/slot${winS}`] = (freshD.totalTricksWon?.[`slot${winS}`]||0) + 1;
-        updates.turn = winS; updates.leadSuit = "";
+        updates.turn = winS; 
+        updates.leadSuit = "";
+        updates.currentTrick = {slot0:"",slot1:"",slot2:"",slot3:""};
         
         const totalA = (freshD.mindis?.slot0?.length||0) + (freshD.mindis?.slot2?.length||0) + ((winS===0||winS===2)?tens.length:0);
         const totalB = (freshD.mindis?.slot1?.length||0) + (freshD.mindis?.slot3?.length||0) + ((winS===1||winS===3)?tens.length:0);
         
+        // Check if all 4 mindis are captured
         if(totalA + totalB === 4) {
             let scA = freshD.matchScore.A, scB = freshD.matchScore.B;
             const tA = (freshD.totalTricksWon?.slot0||0) + (freshD.totalTricksWon?.slot2||0) + ((winS===0||winS===2)?1:0);
             const tB = (freshD.totalTricksWon?.slot1||0) + (freshD.totalTricksWon?.slot3||0) + ((winS===1||winS===3)?1:0);
-            if(totalA > totalB) scA++; else if(totalB > totalA) scB++; else if(tA > tB) scA++; else scB++;
-            updates.matchScore = {A:scA, B:scB}; updates.started = false; updates.dealer = (freshD.dealer+1)%4;
+            
+            let winMsg = "", reason = "";
+            
+            // Only award point if one team captured all 4 mindis
+            if(totalA === 4) { 
+              scA++; 
+              winMsg = "TEAM A WINS ROUND!"; 
+              reason = "Captured all 4 Mindis!"; 
+            } else if(totalB === 4) { 
+              scB++; 
+              winMsg = "TEAM B WINS ROUND!"; 
+              reason = "Captured all 4 Mindis!"; 
+            } else {
+              // It's a draw - use tiebreaker for who won round, but no point awarded
+              if(tA > tB) { 
+                winMsg = "DRAW - No Points"; 
+                reason = `Mindis split ${totalA}-${totalB}. Team A had more tricks (${tA} vs ${tB})`;
+              } else if(tB > tA) { 
+                winMsg = "DRAW - No Points"; 
+                reason = `Mindis split ${totalA}-${totalB}. Team B had more tricks (${tB} vs ${tA})`;
+              } else {
+                winMsg = "DRAW - No Points"; 
+                reason = `Mindis split ${totalA}-${totalB}. Equal tricks (${tA} each)`;
+              }
+            }
+            
+            updates.matchScore = {A:scA, B:scB};
+            updates.started = false;
+            updates.dealer = (freshD.dealer+1)%4;
             updates.hands = {slot0:[],slot1:[],slot2:[],slot3:[]};
+            updates.roundResult = {active:true, winner: winMsg, reason: reason};
+            
+            setTimeout(() => gameRef.child('roundResult/active').set(false), 5000);
         }
-        setTimeout(()=>gameRef.update(updates), 1200);
-    } else { await gameRef.update(updates); }
+        
+        setTimeout(() => gameRef.update(updates), 1200);
+    } else { 
+      await gameRef.update(updates); 
+    }
 }
 
-async function resetMatch() { if(confirm("Reset?")) { await gameRef.remove(); location.reload(); } }
+async function resetMatch() { 
+  if(confirm("Reset entire match? This will clear all scores and players.")) { 
+    await gameRef.remove(); 
+    location.reload(); 
+  } 
+}
 
 (async () => { 
     const d = (await gameRef.once('value')).val(); 
     if(d?.players) { 
-        for(let i=0; i<4; i++) { if(d.players['slot'+i].id===myId) { mySlot=i; document.getElementById('lobby').style.display='none'; sync(); break; } } 
+        for(let i=0; i<4; i++) { 
+          if(d.players['slot'+i].id===myId) { 
+            mySlot=i; 
+            document.getElementById('lobby').style.display='none'; 
+            sync(); 
+            break; 
+          } 
+        } 
     } 
 })();
 </script>
