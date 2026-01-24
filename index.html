@@ -76,6 +76,7 @@
   <input id="userName" placeholder="Your Name" />
   <input id="teamName" placeholder="Team Name" />
   <button class="btn" onclick="joinGame()">Join Table</button>
+  <button class="btn" style="background:#8B0000; margin-top:10px;" onclick="clearDatabaseFromLobby()">Clear Database</button>
 </div>
 
 <div id="round-end-overlay" class="round-end-overlay">
@@ -159,12 +160,32 @@ async function joinGame() {
     if(!snap.val()) await gameRef.set(d);
     
     let slot = -1;
+    let occupiedSlots = 0;
+    
+    // First check if user already has a slot
     for(let i=0; i<4; i++) { 
-        if(d.players['slot'+i].id === myId) { slot = i; break; } 
-        if(slot===-1 && !d.players['slot'+i].id) slot = i; 
+        if(d.players['slot'+i].id === myId) { 
+          slot = i; 
+          break; 
+        }
+        if(d.players['slot'+i].id) occupiedSlots++;
     }
     
-    if(slot===-1) return alert("Table is full!");
+    // If user doesn't have a slot, find an empty one
+    if(slot === -1) {
+      for(let i=0; i<4; i++) {
+        if(!d.players['slot'+i].id) {
+          slot = i;
+          break;
+        }
+      }
+    }
+    
+    if(slot === -1) {
+      alert(`Table is full! ${occupiedSlots} players are seated. Use "CLEAR DATABASE" from the menu to reset.`);
+      return;
+    }
+    
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id:myId, name:name, teamName:team});
     document.getElementById('lobby').style.display='none';
@@ -491,6 +512,21 @@ async function clearDatabase() {
       } catch(error) {
         alert("Error clearing database: " + error.message);
       }
+    }
+  }
+}
+
+async function clearDatabaseFromLobby() {
+  if(confirm("Clear the database? This will remove all players and reset the game.")) {
+    try {
+      await gameRef.remove();
+      sessionStorage.removeItem('mindi_uid');
+      myId = 'u'+Math.random().toString(36).substr(2, 9);
+      sessionStorage.setItem('mindi_uid', myId);
+      alert("Database cleared! You can now join with a fresh table.");
+      location.reload();
+    } catch(error) {
+      alert("Error clearing database: " + error.message);
     }
   }
 }
