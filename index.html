@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Mindi - iPhone Pro Edition</title>
+<title>Mindi - Test Mode</title>
 <style>
-  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 70px; --card-h: 100px; }
+  :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 65px; --card-h: 95px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); overflow: hidden; }
 
@@ -13,46 +13,45 @@
   #menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1000; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); border-radius: 5px; padding: 10px; cursor: pointer; }
   #menu-toggle span { width: 22px; height: 2px; background: var(--gold); display: block; margin: 4px 0; }
   
-  .scoreboard { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 200px; display: none; }
-  .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; border-bottom: 1px solid #333; padding-bottom: 4px; }
-  .score-val { color: var(--gold); font-weight: bold; font-size: 1.3rem; }
+  .scoreboard { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 180px; display: none; }
+  .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #333; padding-bottom: 4px; }
+  .score-val { color: var(--gold); font-weight: bold; }
 
-  /* Player Positions */
+  /* Players */
   .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; width: 110px; }
-  .player { background: rgba(0,0,0,0.8); padding: 6px; border-radius: 12px; border: 1px solid #555; font-size: 0.8rem; width: 100%; text-align: center; }
-  .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
+  .player { background: rgba(0,0,0,0.8); padding: 6px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.75rem; width: 100%; text-align: center; }
+  .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); background: #000; }
   
   .top { top: 60px; left: 50%; transform: translateX(-50%); }
-  .bottom { bottom: 280px; left: 50%; transform: translateX(-50%); }
+  .bottom { bottom: 270px; left: 50%; transform: translateX(-50%); }
   .left { left: 10px; top: 40%; transform: translateY(-50%); }
   .right { right: 10px; top: 40%; transform: translateY(-50%); }
 
-  /* Card UI with Corner Info */
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 8px; border: 1px solid #444; position: relative; box-shadow: 2px 2px 10px rgba(0,0,0,0.4); pointer-events: auto; flex-shrink: 0; }
-  .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; padding: 2px; }
-  .card .top-left { top: 2px; left: 2px; }
-  .card .bot-right { bottom: 2px; right: 2px; transform: rotate(180deg); }
-  .card .suit-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; }
-  .card .rank { font-size: 1.1rem; font-weight: 900; }
-  .card .suit-mini { font-size: 0.9rem; }
+  /* Cards */
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 8px; border: 1px solid #444; position: relative; box-shadow: 2px 2px 10px rgba(0,0,0,0.4); pointer-events: auto; user-select: none; }
+  .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; padding: 3px; font-weight: 900; }
+  .card .top-left { top: 0; left: 0; }
+  .card .bot-right { bottom: 0; right: 0; transform: rotate(180deg); }
+  .card .suit-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.2rem; }
+  .card .rank { font-size: 1.1rem; }
+  .card .suit-mini { font-size: 0.8rem; }
   .red { color: #d00; }
 
-  /* Playing Area */
-  .slot-card { position: absolute; transition: 0.3s ease-out; width: var(--card-w); height: var(--card-h); }
-  .c-top { top: 180px; left: 50%; transform: translateX(-50%); }
+  /* Center Area */
+  .slot-card { position: absolute; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); width: var(--card-w); height: var(--card-h); }
+  .c-top { top: 170px; left: 50%; transform: translateX(-50%); }
   .c-bottom { bottom: 380px; left: 50%; transform: translateX(-50%); }
-  .c-left { left: 100px; top: 40%; transform: translateY(-50%); }
-  .c-right { right: 100px; top: 40%; transform: translateY(-50%); }
+  .c-left { left: 95px; top: 40%; transform: translateY(-50%); }
+  .c-right { right: 95px; top: 40%; transform: translateY(-50%); }
 
-  /* Hand Area */
-  .controls { position: fixed; bottom: 0; width: 100%; padding-bottom: 50px; display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 1000; }
-  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 18px 50px; border-radius: 40px; font-weight: 900; font-size: 1.2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.6); margin-bottom: 20px; }
-  .btn:disabled { background: #444; color: #777; }
+  /* Control Panel */
+  .controls { position: fixed; bottom: 0; width: 100%; padding-bottom: 40px; display: flex; flex-direction: column; align-items: center; z-index: 1000; background: linear-gradient(transparent, rgba(0,0,0,0.8) 50%); }
+  .btn { background: var(--gold); color: black; border: none; padding: 16px 45px; border-radius: 35px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); margin-bottom: 15px; cursor: pointer; }
+  .btn:disabled { background: #444; color: #777; box-shadow: none; }
 
-  .my-hand { pointer-events: auto; display: flex; width: 95%; justify-content: center; height: 120px; }
-  .my-hand .card { margin-left: -45px; transition: transform 0.2s; }
-  .my-hand .card:first-child { margin-left: 0; }
-  .my-hand .card.selected { transform: translateY(-40px); z-index: 500 !important; border: 3px solid #007bff; }
+  .my-hand { display: flex; width: 100%; justify-content: center; height: 110px; margin-left: 35px; }
+  .my-hand .card { margin-left: -42px; transition: 0.2s; cursor: pointer; }
+  .my-hand .card.selected { transform: translateY(-35px); z-index: 500 !important; border: 3px solid #007bff; box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
 
   .hukm-indicator { position: fixed; top: 15px; left: 15px; z-index: 200; }
   .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; font-weight: bold; }
@@ -62,8 +61,9 @@
 <body>
 
 <div id="lobby" class="overlay">
-  <h1 style="color:var(--gold)">MINDI</h1>
-  <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:240px; margin-bottom:15px; font-size:1.1rem;" />
+  <h1 style="color:var(--gold); margin-bottom:10px;">MINDI</h1>
+  <p style="color:#888; margin-bottom:20px;">Open 4 tabs to test</p>
+  <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:240px; margin-bottom:15px; font-size:1.1rem; border:none;" />
   <button class="btn" onclick="joinGame()">JOIN TABLE</button>
 </div>
 
@@ -72,14 +72,14 @@
 </div>
 
 <div class="scoreboard" id="scorePanel">
-  <div class="score-row"><span>Adi & Manan</span><span id="score-a" class="score-val">0</span></div>
+  <div class="score-row"><span>Team Adi</span><span id="score-a" class="score-val">0</span></div>
   <div class="score-row"><span>Opponents</span><span id="score-b" class="score-val">0</span></div>
-  <button style="width:100%; padding:10px; margin-top:10px;" onclick="callMutualDraw()">RESET</button>
+  <button style="width:100%; padding:8px; background:#333; color:white; border:none; border-radius:5px;" onclick="resetMatch()">RESET MATCH</button>
 </div>
 
 <div class="felt">
   <div class="hukm-indicator"><div id="hukm-box" class="hukm-card">M</div></div>
-  <button id="dealBtn" class="btn" style="position:absolute; top:45%; left:50%; transform:translateX(-50%); z-index:2100; display:none;" onclick="dealNewGame()">DEAL</button>
+  <button id="dealBtn" class="btn" style="position:absolute; top:45%; left:50%; transform:translateX(-50%); z-index:2100; display:none;" onclick="dealNewGame()">DEAL CARDS</button>
 
   <div id="w-top" class="player-wrapper top"><div id="p-top" class="player">...</div></div>
   <div id="w-left" class="player-wrapper left"><div id="p-left" class="player">...</div></div>
@@ -112,11 +112,10 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v27_final_pro');
+const gameRef = db.ref('mindi_v28_test_tab');
 
-// REFRESH PERSISTENCE
-let myId = localStorage.getItem('mindi_id_v27') || ('u' + Math.floor(Math.random()*1000000));
-localStorage.setItem('mindi_id_v27', myId);
+// NEW ID PER TAB FOR TESTING
+let myId = 'u' + Math.floor(Math.random()*1000000);
 let mySlot = null;
 
 function toggleScoreboard() {
@@ -133,30 +132,13 @@ async function joinGame() {
         d = (await gameRef.once('value')).val();
     }
     let slot = -1;
-    for(let i=0; i<4; i++) {
-        if(d.players['slot'+i].id === myId) { slot = i; break; }
-        if(slot === -1 && !d.players['slot'+i].id) slot = i;
-    }
+    for(let i=0; i<4; i++) { if(!d.players['slot'+i].id) { slot = i; break; } }
+    if(slot === -1) return alert("Full!");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id: myId, name: name});
     document.getElementById('lobby').style.display = 'none';
     sync();
 }
-
-// Auto-join if ID exists in database
-(async () => {
-    const snap = await gameRef.once('value');
-    const d = snap.val();
-    if(d && d.players) {
-        for(let i=0; i<4; i++) {
-            if(d.players['slot'+i].id === myId) {
-                mySlot = i;
-                document.getElementById('lobby').style.display = 'none';
-                sync(); break;
-            }
-        }
-    }
-})();
 
 function sync() {
     gameRef.on('value', snap => {
@@ -173,9 +155,8 @@ function sync() {
         for(let i=0; i<4; i++) {
             const pos = getPos(i); const p = d.players['slot'+i];
             if(p.id) playerCount++;
-            document.getElementById('p-'+pos).innerHTML = `<strong>${p.name || 'Empty'}</strong>${d.dealer===i?' (D)':''}`;
+            document.getElementById('p-'+pos).innerHTML = `<strong>${p.name || '...'}</strong>${d.dealer===i?' (D)':''}`;
             document.getElementById('p-'+pos).classList.toggle('active', d.turn === i && d.started);
-            
             const sEl = document.getElementById('slot-'+pos);
             if(!d.currentTrick?.['slot'+i]) sEl.innerHTML = '';
             else if(!sEl.innerHTML) sEl.appendChild(createCardUI(d.currentTrick['slot'+i]));
@@ -192,7 +173,8 @@ function sync() {
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
-            el.onclick = () => {
+            el.onclick = (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
                 el.classList.add('selected'); el.dataset.val = c; el.dataset.idx = idx;
             };
@@ -269,9 +251,10 @@ async function handlePlay() {
     } else { await gameRef.update(updates); }
 }
 
-async function callMutualDraw() {
-    if(!confirm("Reset table?")) return;
-    await gameRef.update({ started: false, currentTrick: null, hands: null, hukmRevealed: false });
+async function resetMatch() {
+    if(!confirm("Reset entire table and scores?")) return;
+    await gameRef.remove();
+    location.reload();
 }
 </script>
 </body>
