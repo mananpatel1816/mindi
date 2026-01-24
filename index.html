@@ -27,10 +27,10 @@
   .right { right: 20px; }
 
   /* Mindi Captured Icons */
-  .mindi-captured { display: flex; gap: 3px; margin-top: 5px; height: 20px; flex-wrap: wrap; justify-content: center; max-width: 130px; }
-  .mini-mindi { width: 16px; height: 23px; background: white; border: 1px solid #000; border-radius: 2px; font-size: 8px; font-weight: 900; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1px; }
-  .mini-mindi .rank { font-size: 9px; line-height: 1; }
-  .mini-mindi .suit { font-size: 10px; line-height: 1; }
+  .mindi-captured { display: flex; gap: 3px; margin-top: 5px; min-height: 23px; flex-wrap: wrap; justify-content: center; max-width: 130px; }
+  .mini-mindi { width: 16px; height: 23px; background: white; border: 1px solid #000; border-radius: 2px; font-size: 7px; font-weight: 900; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1px; box-sizing: border-box; }
+  .mini-mindi .rank { font-size: 8px; line-height: 1.1; margin-bottom: 1px; }
+  .mini-mindi .suit { font-size: 9px; line-height: 1; }
   .mini-mindi.red { color: #d00; }
 
   /* Card Styles */
@@ -74,7 +74,6 @@
 <div id="lobby" class="overlay">
   <h1 style="color:var(--gold); font-size: 2.5rem; margin-bottom: 30px;">MINDI ONLINE</h1>
   <input id="userName" placeholder="Your Name" />
-  <input id="teamName" placeholder="Team Name" />
   <button class="btn" onclick="joinGame()">Join Table</button>
   <button class="btn" style="background:#8B0000; margin-top:10px;" onclick="clearDatabaseFromLobby()">Clear Database</button>
 </div>
@@ -143,17 +142,16 @@ function toggleScoreboard() {
 
 async function joinGame() {
     const name = document.getElementById('userName').value.trim() || "Player";
-    const team = document.getElementById('teamName').value.trim() || "Team";
     const snap = await gameRef.once('value');
     let d = snap.val() || { 
       started: false, 
       dealer: 0, 
       matchScore: {A:0, B:0}, 
       players: {
-        slot0: {id:"", name:"", teamName:""},
-        slot1: {id:"", name:"", teamName:""},
-        slot2: {id:"", name:"", teamName:""},
-        slot3: {id:"", name:"", teamName:""}
+        slot0: {id:"", name:""},
+        slot1: {id:"", name:""},
+        slot2: {id:"", name:""},
+        slot3: {id:"", name:""}
       }
     };
     
@@ -187,7 +185,7 @@ async function joinGame() {
     }
     
     mySlot = slot;
-    await gameRef.child('players/slot'+slot).set({id:myId, name:name, teamName:team});
+    await gameRef.child('players/slot'+slot).set({id:myId, name:name});
     document.getElementById('lobby').style.display='none';
     sync();
 }
@@ -197,8 +195,8 @@ function sync() {
         const d = snap.val(); 
         if(!d || !d.players) return;
         
-        document.getElementById('team-a-label').innerText = `${d.players.slot0.teamName || 'T1'}/${d.players.slot2.teamName || 'T3'}`;
-        document.getElementById('team-b-label').innerText = `${d.players.slot1.teamName || 'T2'}/${d.players.slot3.teamName || 'T4'}`;
+        document.getElementById('team-a-label').innerText = `${d.players.slot0.name || 'P1'} & ${d.players.slot2.name || 'P3'}`;
+        document.getElementById('team-b-label').innerText = `${d.players.slot1.name || 'P2'} & ${d.players.slot3.name || 'P4'}`;
         document.getElementById('score-a').innerText = d.matchScore?.A || 0;
         document.getElementById('score-b').innerText = d.matchScore?.B || 0;
         
