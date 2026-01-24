@@ -3,21 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Mindi - Test Mode</title>
+<title>Mindi - Hukm Fixed</title>
 <style>
   :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 65px; --card-h: 95px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); overflow: hidden; }
 
-  /* Hamburger Menu */
   #menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1000; background: rgba(0,0,0,0.6); border: 1px solid var(--gold); border-radius: 5px; padding: 10px; cursor: pointer; }
   #menu-toggle span { width: 22px; height: 2px; background: var(--gold); display: block; margin: 4px 0; }
   
   .scoreboard { position: fixed; top: 70px; right: 15px; background: rgba(0,0,0,0.95); padding: 15px; border-radius: 12px; border: 1.5px solid var(--gold); z-index: 999; min-width: 180px; display: none; }
   .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #333; padding-bottom: 4px; }
-  .score-val { color: var(--gold); font-weight: bold; }
-
-  /* Players */
+  
   .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; width: 110px; }
   .player { background: rgba(0,0,0,0.8); padding: 6px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.75rem; width: 100%; text-align: center; }
   .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); background: #000; }
@@ -27,31 +24,30 @@
   .left { left: 10px; top: 40%; transform: translateY(-50%); }
   .right { right: 10px; top: 40%; transform: translateY(-50%); }
 
-  /* Cards */
-  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 8px; border: 1px solid #444; position: relative; box-shadow: 2px 2px 10px rgba(0,0,0,0.4); pointer-events: auto; user-select: none; }
+  .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 8px; border: 1px solid #444; position: relative; box-shadow: 2px 2px 10px rgba(0,0,0,0.4); pointer-events: auto; }
   .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; padding: 3px; font-weight: 900; }
   .card .top-left { top: 0; left: 0; }
   .card .bot-right { bottom: 0; right: 0; transform: rotate(180deg); }
   .card .suit-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.2rem; }
-  .card .rank { font-size: 1.1rem; }
-  .card .suit-mini { font-size: 0.8rem; }
   .red { color: #d00; }
+  
+  /* Hukm Glow in hand */
+  .is-hukm { box-shadow: 0 0 15px var(--gold) !important; border: 2px solid var(--gold) !important; }
+  .locked { opacity: 0.5; filter: grayscale(1); pointer-events: none !important; }
 
-  /* Center Area */
-  .slot-card { position: absolute; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); width: var(--card-w); height: var(--card-h); }
+  .slot-card { position: absolute; transition: 0.3s ease-out; width: var(--card-w); height: var(--card-h); }
   .c-top { top: 170px; left: 50%; transform: translateX(-50%); }
   .c-bottom { bottom: 380px; left: 50%; transform: translateX(-50%); }
   .c-left { left: 95px; top: 40%; transform: translateY(-50%); }
   .c-right { right: 95px; top: 40%; transform: translateY(-50%); }
 
-  /* Control Panel */
   .controls { position: fixed; bottom: 0; width: 100%; padding-bottom: 40px; display: flex; flex-direction: column; align-items: center; z-index: 1000; background: linear-gradient(transparent, rgba(0,0,0,0.8) 50%); }
   .btn { background: var(--gold); color: black; border: none; padding: 16px 45px; border-radius: 35px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); margin-bottom: 15px; cursor: pointer; }
-  .btn:disabled { background: #444; color: #777; box-shadow: none; }
+  .btn:disabled { background: #444; color: #777; }
 
-  .my-hand { display: flex; width: 100%; justify-content: center; height: 110px; margin-left: 35px; }
+  .my-hand { display: flex; width: 100%; justify-content: center; height: 110px; margin-left: 35px; pointer-events: auto; }
   .my-hand .card { margin-left: -42px; transition: 0.2s; cursor: pointer; }
-  .my-hand .card.selected { transform: translateY(-35px); z-index: 500 !important; border: 3px solid #007bff; box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
+  .my-hand .card.selected { transform: translateY(-35px); z-index: 500 !important; border: 3px solid #007bff; }
 
   .hukm-indicator { position: fixed; top: 15px; left: 15px; z-index: 200; }
   .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; font-weight: bold; }
@@ -61,9 +57,8 @@
 <body>
 
 <div id="lobby" class="overlay">
-  <h1 style="color:var(--gold); margin-bottom:10px;">MINDI</h1>
-  <p style="color:#888; margin-bottom:20px;">Open 4 tabs to test</p>
-  <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:240px; margin-bottom:15px; font-size:1.1rem; border:none;" />
+  <h1 style="color:var(--gold)">MINDI</h1>
+  <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:240px; margin-bottom:15px; font-size:1.1rem;" />
   <button class="btn" onclick="joinGame()">JOIN TABLE</button>
 </div>
 
@@ -74,7 +69,7 @@
 <div class="scoreboard" id="scorePanel">
   <div class="score-row"><span>Team Adi</span><span id="score-a" class="score-val">0</span></div>
   <div class="score-row"><span>Opponents</span><span id="score-b" class="score-val">0</span></div>
-  <button style="width:100%; padding:8px; background:#333; color:white; border:none; border-radius:5px;" onclick="resetMatch()">RESET MATCH</button>
+  <button style="width:100%; padding:8px;" onclick="resetMatch()">RESET MATCH</button>
 </div>
 
 <div class="felt">
@@ -112,9 +107,8 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v28_test_tab');
+const gameRef = db.ref('mindi_v29_strict_hukm');
 
-// NEW ID PER TAB FOR TESTING
 let myId = 'u' + Math.floor(Math.random()*1000000);
 let mySlot = null;
 
@@ -162,10 +156,10 @@ function sync() {
             else if(!sEl.innerHTML) sEl.appendChild(createCardUI(d.currentTrick['slot'+i]));
         }
 
+        const hBox = document.getElementById('hukm-box');
         if(d.hukmRevealed) {
-            document.getElementById('hukm-box').innerHTML = '';
-            document.getElementById('hukm-box').appendChild(createCardInner(d.hukmCard));
-        } else { document.getElementById('hukm-box').innerHTML = "M"; }
+            hBox.innerHTML = ''; hBox.appendChild(createCardInner(d.hukmCard));
+        } else { hBox.innerHTML = "M"; }
 
         document.getElementById('dealBtn').style.display = (mySlot === d.dealer && !d.started && playerCount === 4) ? 'block' : 'none';
         document.getElementById('playBtn').disabled = (d.turn !== mySlot);
@@ -173,8 +167,15 @@ function sync() {
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
-            el.onclick = (e) => {
-                e.stopPropagation();
+            const isHukmCard = (c === d.hukmCard);
+            if(isHukmCard) el.classList.add('is-hukm');
+            
+            // Rules: Dealer can't play Hukm unless revealed or it's the last card
+            const isLocked = (mySlot === d.dealer && isHukmCard && !d.hukmRevealed && d.hands['slot'+mySlot].length > 1);
+            if(isLocked) el.classList.add('locked');
+
+            el.onclick = () => {
+                if(isLocked) return;
                 document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
                 el.classList.add('selected'); el.dataset.val = c; el.dataset.idx = idx;
             };
@@ -204,33 +205,48 @@ function createCardUI(c) {
 }
 
 async function dealNewGame() {
-    const suits = ['S','H','D','C'], ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
+    const suits = ['S', 'H', 'D', 'C'], ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
     let deck = []; suits.forEach(s => ranks.forEach(r => deck.push(r+s)));
     deck.sort(() => Math.random() - 0.5);
     const hands = {}; for(let i=0; i<4; i++) hands['slot'+i] = deck.splice(0, 13);
     const snap = await gameRef.once('value'); const d = snap.val();
+    
+    // Pick Hukm Card from Dealer's hand
     const hCard = hands['slot'+d.dealer][Math.floor(Math.random()*13)];
-    await gameRef.update({ started: true, turn: (d.dealer + 1) % 4, hands: hands, currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""}, hukmCard: hCard, hukmSuit: hCard.slice(-1), hukmRevealed: false, leadSuit: "", mindis: {slot0:[], slot1:[], slot2:[], slot3:[]} });
+    
+    await gameRef.update({ 
+        started: true, turn: (d.dealer + 1) % 4, 
+        hands: hands, 
+        currentTrick: {slot0:"", slot1:"", slot2:"", slot3:""}, 
+        hukmCard: hCard, hukmSuit: hCard.slice(-1), hukmRevealed: false, 
+        leadSuit: "", mindis: {slot0:[], slot1:[], slot2:[], slot3:[]} 
+    });
 }
 
 async function handlePlay() {
     const sel = document.querySelector('.selected'); if(!sel) return;
     const snap = await gameRef.once('value'); const d = snap.val();
     const card = sel.dataset.val;
+    
+    // Logic for revealing Hukm
     if(d.leadSuit && !card.endsWith(d.leadSuit)) {
         if(d.hands['slot'+mySlot].some(c => c.endsWith(d.leadSuit))) return alert("Follow Suit!");
         if(!d.hukmRevealed && (mySlot !== d.dealer || d.hands['slot'+mySlot].length === 1)) {
-            if(confirm("Reveal Hukm?")) await gameRef.update({ hukmRevealed: true });
+            if(confirm("No Suit. Reveal Hukm?")) await gameRef.update({ hukmRevealed: true });
         }
     }
+    
     const h = d.hands['slot'+mySlot]; h.splice(sel.dataset.idx, 1);
     const trick = d.currentTrick || {}; trick['slot'+mySlot] = card;
     let updates = { [`hands/slot${mySlot}`]: h, currentTrick: trick, turn: (d.turn + 1) % 4 };
     if(!d.leadSuit) updates.leadSuit = card.slice(-1);
+
     const played = Object.values(trick).filter(c => c !== "");
     if(played.length === 4) {
         const rankMap = {'A':14,'K':13,'Q':12,'J':11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
         let winS = 0, hi = -1;
+        const currentHukm = (await gameRef.once('value')).val().hukmRevealed; // check if revealed mid-turn
+        
         for(let i=0; i<4; i++) {
             const c = trick['slot'+i], s = c.slice(-1), r = c.slice(0,-1);
             let p = rankMap[r];
@@ -247,12 +263,12 @@ async function handlePlay() {
             if(totalA === 4) scA++; else if (totalB === 4) scB++;
             updates.matchScore = { A: scA, B: scB }; updates.started = false; updates.dealer = (d.dealer + 1) % 4; 
         }
-        setTimeout(() => gameRef.update(updates), 1000);
+        setTimeout(() => gameRef.update(updates), 1200);
     } else { await gameRef.update(updates); }
 }
 
 async function resetMatch() {
-    if(!confirm("Reset entire table and scores?")) return;
+    if(!confirm("Reset match?")) return;
     await gameRef.remove();
     location.reload();
 }
