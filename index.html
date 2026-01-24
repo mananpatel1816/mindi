@@ -3,13 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Mindi - Teammate Alignment</title>
+<title>Mindi - Dealer Hukm Fixed</title>
 <style>
   :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 58px; --card-h: 82px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
   .felt { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle, #2d8a57 0%, #1a5e3a 100%); display: flex; align-items: center; justify-content: center; }
   
-  /* Player wrappers - SWAPPED LEFT AND RIGHT FOR CLOCKWISE FLOW */
   .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 10; width: 120px; }
   .player { background: rgba(0,0,0,0.85); padding: 6px 14px; border-radius: 20px; border: 1.5px solid #555; font-size: 0.85rem; width: 100%; text-align: center; box-sizing: border-box; }
   .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); transform: scale(1.05); }
@@ -19,7 +18,6 @@
 
   .top { top: 15px; left: 50%; transform: translateX(-50%); }
   .bottom { bottom: 150px; left: 50%; transform: translateX(-50%); }
-  /* Swapped: Left is now the first player after dealer (clockwise) */
   .left { left: 15px; top: 45%; transform: translateY(-50%); }
   .right { right: 15px; top: 45%; transform: translateY(-50%); }
 
@@ -31,7 +29,7 @@
   .suit-large { font-size: 1.8rem; line-height: 1; }
   .red { color: #e00; }
   
-  .locked { background: #222 !important; border: 2px dashed #444 !important; }
+  .locked { background: #222 !important; border: 2px dashed #444 !important; opacity: 0.6; cursor: not-allowed !important; }
   .locked::after { content: '🔒'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 1.5rem; }
 
   .slot-card { position: absolute; transition: 0.4s ease-out; }
@@ -55,7 +53,7 @@
   <h1 style="color:var(--gold)">MINDI TABLE</h1>
   <input id="userName" placeholder="Your Name" style="padding:15px; border-radius:10px; width:220px; margin-bottom:15px;" />
   <button class="btn" onclick="joinGame()">SIT DOWN</button>
-  <button style="margin-top:40px; color:#444; background:none; border:none; text-decoration:underline;" onclick="nuclearReset()">Wipe Database</button>
+  <button style="margin-top:40px; color:#444; background:none; border:none; text-decoration:underline;" onclick="nuclearReset()">Nuclear Reset</button>
 </div>
 
 <div class="felt">
@@ -84,7 +82,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-// Same Firebase configuration as previous version
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyBK-6sMXTdm__ptjxE9sae3eSePt-9OaZg",
   authDomain: "mindi-game-93625.firebaseapp.com",
@@ -96,18 +94,18 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v17_teams');
+const gameRef = db.ref('mindi_v18_finalrules');
 let myId = 'u' + Math.floor(Math.random()*999);
 let mySlot = null;
 
-async function nuclearReset() { if(confirm("Reset all?")) { await gameRef.remove(); location.reload(); } }
+async function nuclearReset() { if(confirm("Reset?")) { await gameRef.remove(); location.reload(); } }
 
 async function joinGame() {
     const name = document.getElementById('userName').value || "Player";
     const snap = await gameRef.once('value');
     let d = snap.val();
     if(!d) {
-        await gameRef.set({ started: false, dealer: Math.floor(Math.random()*4), players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} } });
+        await gameRef.set({ started: false, dealer: 0, players: { slot0:{id:""}, slot1:{id:""}, slot2:{id:""}, slot3:{id:""} } });
         d = (await gameRef.once('value')).val();
     }
     let slot = -1;
@@ -122,9 +120,6 @@ async function joinGame() {
 function sync() {
     gameRef.on('value', snap => {
         const d = snap.val(); if(!d) return;
-        
-        // CLOCKWISE MAP: 0=Bottom, 1=Left, 2=Top, 3=Right
-        // This ensures Teammates (0&2 and 1&3) are across from each other
         const getPos = (s) => { 
             const rel = (s - mySlot + 4) % 4; 
             return ['bottom', 'left', 'top', 'right'][rel]; 
@@ -164,8 +159,13 @@ function sync() {
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
-            if(mySlot === d.dealer && c === d.hukmCard && !d.hukmRevealed && d.hands['slot'+mySlot].length > 1) {
-                el.classList.add('locked'); el.innerHTML = "";
+            const handSize = d.hands['slot'+mySlot].length;
+            
+            // DEALER LOCK LOGIC: Cannot click the secret card unless it is the last card.
+            if(mySlot === d.dealer && c === d.hukmCard && !d.hukmRevealed && handSize > 1) {
+                el.classList.add('locked');
+                el.innerHTML = "";
+                el.onclick = null;
             } else {
                 el.onclick = () => {
                     document.querySelectorAll('.my-hand .card').forEach(x => x.classList.remove('selected'));
@@ -227,7 +227,20 @@ async function handlePlay() {
     if(d.leadSuit && !card.endsWith(d.leadSuit)) {
         const hasLead = d.hands['slot'+mySlot].some(c => c.endsWith(d.leadSuit));
         if(hasLead) return alert("Follow Suit!");
-        if(!d.hukmRevealed && confirm("Reveal Hukm?")) await gameRef.update({ hukmRevealed: true });
+        
+        // REVEAL LOGIC: 
+        // 1. If not dealer: Always allowed to reveal.
+        // 2. If dealer: Only allowed if it's the last card (this is handled by the UI lock, but safety checked here).
+        if(!d.hukmRevealed) {
+            if(mySlot !== d.dealer) {
+                if(confirm("Reveal Hukm?")) await gameRef.update({ hukmRevealed: true });
+            } else if(d.hands['slot'+mySlot].length === 1) {
+                // Dealer revealing their last card
+                await gameRef.update({ hukmRevealed: true });
+            } else {
+                return alert("Dealer cannot reveal Hukm until their last card!");
+            }
+        }
     }
 
     const h = d.hands['slot'+mySlot]; h.splice(sel.dataset.idx, 1);
