@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Mindi - Instant End</title>
+<title>Mindi Pro - Final Version</title>
 <style>
   :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 75px; --card-h: 110px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
@@ -16,7 +16,7 @@
   .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #333; padding-bottom: 4px; }
   
   .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; width: 120px; }
-  .player { background: rgba(0,0,0,0.85); padding: 8px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.85rem; width: 100%; text-align: center; font-weight: bold; }
+  .player { background: rgba(0,0,0,0.85); padding: 8px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.85rem; width: 100%; text-align: center; font-weight: bold; transition: 0.3s; }
   .active { border-color: var(--gold); box-shadow: 0 0 20px var(--gold); background: #000; }
   
   .top { top: 60px; left: 50%; transform: translateX(-50%); }
@@ -61,9 +61,9 @@
 <div id="menu-toggle" onclick="toggleScoreboard()"><span></span><span></span><span></span></div>
 
 <div class="scoreboard" id="scorePanel">
-  <div class="score-row"><span>Team 1/3 (Adi)</span><span id="score-a">0</span></div>
+  <div class="score-row"><span>Team 1/3</span><span id="score-a">0</span></div>
   <div class="score-row"><span>Team 2/4</span><span id="score-b">0</span></div>
-  <div class="score-row" style="font-size:0.7rem; color:var(--gold);">MINDIS COLLECTED: <span id="mindi-count">0/4</span></div>
+  <div class="score-row" style="font-size:0.7rem; color:var(--gold);">MINDIS: <span id="mindi-count">0/4</span></div>
   <button style="width:100%; padding:10px;" onclick="resetMatch()">RESET MATCH</button>
 </div>
 
@@ -98,7 +98,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v33_instant_end');
+const gameRef = db.ref('mindi_v34_final_logic');
 
 let myId = localStorage.getItem('mindi_uid') || 'u'+Math.random().toString(36).substr(2, 9);
 localStorage.setItem('mindi_uid', myId);
@@ -204,12 +204,11 @@ async function processPlay(card, idx, d) {
             if(p>hi) { hi=p; winS=i; }
         }
         const tens = played.filter(c=>c.startsWith('10'));
-        const existingMindis = (freshD.mindis?.[`slot${winS}`]||[]);
-        updates[`mindis/slot${winS}`] = [...existingMindis, ...tens];
+        updates[`mindis/slot${winS}`] = [...(freshD.mindis?.[`slot${winS}`]||[]), ...tens];
         updates[`totalTricksWon/slot${winS}`] = (freshD.totalTricksWon?.[`slot${winS}`]||0) + 1;
         updates.turn = winS; updates.leadSuit = "";
         
-        // CHECK INSTANT END CONDITION
+        // CHECK END CONDITION AFTER TRICK RESOLVES
         const totalA = (freshD.mindis?.slot0?.length||0) + (freshD.mindis?.slot2?.length||0) + ((winS===0||winS===2)?tens.length:0);
         const totalB = (freshD.mindis?.slot1?.length||0) + (freshD.mindis?.slot3?.length||0) + ((winS===1||winS===3)?tens.length:0);
         const tricksA = (freshD.totalTricksWon?.slot0||0) + (freshD.totalTricksWon?.slot2||0) + ((winS===0||winS===2)?1:0);
@@ -217,21 +216,15 @@ async function processPlay(card, idx, d) {
 
         if(totalA + totalB === 4) {
             let scA = freshD.matchScore.A, scB = freshD.matchScore.B;
-            if(totalA > totalB) scA++; 
-            else if(totalB > totalA) scB++; 
-            else if(tricksA > tricksB) scA++; // 2-2 Tie breaker by tricks
-            else scB++;
-            
-            updates.matchScore = {A:scA, B:scB};
-            updates.started = false;
-            updates.dealer = (freshD.dealer+1)%4;
-            updates.hands = {slot0:[],slot1:[],slot2:[],slot3:[]}; // Clear hands for clean restart
+            if(totalA > totalB) scA++; else if(totalB > totalA) scB++; else if(tricksA > tricksB) scA++; else scB++;
+            updates.matchScore = {A:scA, B:scB}; updates.started = false; updates.dealer = (freshD.dealer+1)%4;
+            updates.hands = {slot0:[],slot1:[],slot2:[],slot3:[]};
         }
         setTimeout(()=>gameRef.update(updates), 1200);
     } else { await gameRef.update(updates); }
 }
 
-async function resetMatch() { if(confirm("Reset match?")) { await gameRef.remove(); location.reload(); } }
+async function resetMatch() { if(confirm("Reset?")) { await gameRef.remove(); location.reload(); } }
 (async () => { const d = (await gameRef.once('value')).val(); if(d?.players) { for(let i=0; i<4; i++) { if(d.players['slot'+i].id===myId) { mySlot=i; document.getElementById('lobby').style.display='none'; sync(); break; } } } })();
 </script>
 </body>
