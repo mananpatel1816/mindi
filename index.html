@@ -27,8 +27,11 @@
   .right { right: 20px; }
 
   /* Mindi Captured Icons */
-  .mindi-captured { display: flex; gap: 3px; margin-top: 5px; height: 20px; }
-  .mini-mindi { width: 14px; height: 20px; background: white; border: 1px solid #000; border-radius: 2px; color: #d00; font-size: 9px; font-weight: 900; text-align: center; line-height: 20px; }
+  .mindi-captured { display: flex; gap: 3px; margin-top: 5px; height: 20px; flex-wrap: wrap; justify-content: center; max-width: 130px; }
+  .mini-mindi { width: 16px; height: 23px; background: white; border: 1px solid #000; border-radius: 2px; font-size: 8px; font-weight: 900; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1px; }
+  .mini-mindi .rank { font-size: 9px; line-height: 1; }
+  .mini-mindi .suit { font-size: 10px; line-height: 1; }
+  .mini-mindi.red { color: #d00; }
 
   /* Card Styles */
   .card { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 6px; border: 1px solid #999; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.4); pointer-events: auto; }
@@ -191,9 +194,15 @@ function sync() {
             el.classList.toggle('active', d.turn===i && d.started);
             
             const capturedBox = pWrapper.querySelector('.mindi-captured');
-            const count = (d.mindis?.['slot'+i]?.length || 0);
+            const capturedMindis = d.mindis?.['slot'+i] || [];
             capturedBox.innerHTML = '';
-            for(let j=0; j<count; j++) capturedBox.innerHTML += '<div class="mini-mindi">10</div>';
+            capturedMindis.forEach(mindiCard => {
+              const suit = mindiCard.slice(-1);
+              const rank = mindiCard.slice(0, -1);
+              const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
+              const isRed = 'HD'.includes(suit);
+              capturedBox.innerHTML += `<div class="mini-mindi ${isRed ? 'red' : ''}"><div class="rank">${rank}</div><div class="suit">${syms[suit]}</div></div>`;
+            });
 
             const sEl = document.getElementById('slot-'+pos);
             if(!d.currentTrick?.['slot'+i]) {
