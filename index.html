@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-<title>Mindi Pro - Final Version</title>
+<title>Mindi Pro - Multi-Tab Fixed</title>
 <style>
   :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-w: 75px; --card-h: 110px; }
   body { margin:0; font-family: -apple-system, sans-serif; background: var(--dark); color: white; overflow: hidden; height: 100vh; touch-action: manipulation; }
@@ -16,7 +16,7 @@
   .score-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; border-bottom: 1px solid #333; padding-bottom: 4px; }
   
   .player-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 10; width: 120px; }
-  .player { background: rgba(0,0,0,0.85); padding: 8px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.85rem; width: 100%; text-align: center; font-weight: bold; transition: 0.3s; }
+  .player { background: rgba(0,0,0,0.85); padding: 8px; border-radius: 12px; border: 1.5px solid #555; font-size: 0.85rem; width: 100%; text-align: center; font-weight: bold; }
   .active { border-color: var(--gold); box-shadow: 0 0 20px var(--gold); background: #000; }
   
   .top { top: 60px; left: 50%; transform: translateX(-50%); }
@@ -31,7 +31,7 @@
   .card .suit-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; }
   .red { color: #d00; }
 
-  .slot-card { position: absolute; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); width: var(--card-w); height: var(--card-h); }
+  .slot-card { position: absolute; transition: 0.3s; width: var(--card-w); height: var(--card-h); }
   .c-top { top: 180px; left: 50%; transform: translateX(-50%); }
   .c-bottom { bottom: 440px; left: 50%; transform: translateX(-50%); }
   .c-left { left: 120px; top: 40%; transform: translateY(-50%); }
@@ -98,21 +98,27 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_v34_final_logic');
+const gameRef = db.ref('mindi_v35_multitab');
 
-let myId = localStorage.getItem('mindi_uid') || 'u'+Math.random().toString(36).substr(2, 9);
-localStorage.setItem('mindi_uid', myId);
+// FIX: Every tab gets its own ID for testing
+let myId = sessionStorage.getItem('mindi_uid') || 'u'+Math.random().toString(36).substr(2, 9);
+sessionStorage.setItem('mindi_uid', myId);
 let mySlot = null;
 
 function toggleScoreboard() { const p = document.getElementById('scorePanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; }
 
 async function joinGame() {
-    const name = document.getElementById('userName').value || "Player";
+    const name = document.getElementById('userName').value || "Player " + myId.slice(-3);
     const snap = await gameRef.once('value');
     let d = snap.val() || { started:false, dealer:0, matchScore:{A:0, B:0}, players:{slot0:{id:""},slot1:{id:""},slot2:{id:""},slot3:{id:""}} };
     if(!snap.val()) await gameRef.set(d);
+    
     let slot = -1;
-    for(let i=0; i<4; i++) { if(d.players['slot'+i].id === myId) { slot = i; break; } if(slot===-1 && !d.players['slot'+i].id) slot = i; }
+    for(let i=0; i<4; i++) { 
+        if(d.players['slot'+i].id === myId) { slot = i; break; } 
+        if(slot===-1 && !d.players['slot'+i].id) slot = i; 
+    }
+    
     if(slot===-1) return alert("Full");
     mySlot = slot;
     await gameRef.child('players/slot'+slot).set({id:myId, name:name});
@@ -127,6 +133,7 @@ function sync() {
         document.getElementById('score-b').innerText = d.matchScore.B;
         let mCount = (d.mindis?.slot0?.length||0) + (d.mindis?.slot1?.length||0) + (d.mindis?.slot2?.length||0) + (d.mindis?.slot3?.length||0);
         document.getElementById('mindi-count').innerText = `${mCount}/4`;
+        
         const getPos = (s) => ['bottom', 'left', 'top', 'right'][(s-mySlot+4)%4];
         let pCount = 0;
         for(let i=0; i<4; i++) {
@@ -139,15 +146,21 @@ function sync() {
             if(!d.currentTrick?.['slot'+i]) sEl.innerHTML = '';
             else if(!sEl.innerHTML) sEl.appendChild(createCardUI(d.currentTrick['slot'+i]));
         }
+        
         const hBox = document.getElementById('hukm-box');
         hBox.innerHTML = d.hukmRevealed ? '' : 'M';
         if(d.hukmRevealed) hBox.appendChild(createCardInner(d.hukmCard));
+        
         document.getElementById('dealBtn').style.display = (mySlot===d.dealer && !d.started && pCount===4) ? 'block' : 'none';
         document.getElementById('playBtn').disabled = (d.turn !== mySlot);
+        
         const hand = document.getElementById('hand-list'); hand.innerHTML = '';
         (d.hands?.['slot'+mySlot] || []).forEach((c, idx) => {
             const el = createCardUI(c);
-            el.onclick = () => { document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); el.dataset.val=c; el.dataset.idx=idx; };
+            el.onclick = () => { 
+                document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected')); 
+                el.classList.add('selected'); el.dataset.val=c; el.dataset.idx=idx; 
+            };
             hand.appendChild(el);
         });
     });
@@ -192,6 +205,7 @@ async function processPlay(card, idx, d) {
     const trick = d.currentTrick || {}; trick['slot'+mySlot]=card;
     let updates = { [`hands/slot${mySlot}`]:h, currentTrick:trick, turn:(d.turn+1)%4 };
     if(!d.leadSuit) updates.leadSuit = card.slice(-1);
+    
     const played = Object.values(trick).filter(c=>c!=="");
     if(played.length===4) {
         const rankMap={'A':14,'K':13,'Q':12,'J':11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
@@ -225,7 +239,18 @@ async function processPlay(card, idx, d) {
 }
 
 async function resetMatch() { if(confirm("Reset?")) { await gameRef.remove(); location.reload(); } }
-(async () => { const d = (await gameRef.once('value')).val(); if(d?.players) { for(let i=0; i<4; i++) { if(d.players['slot'+i].id===myId) { mySlot=i; document.getElementById('lobby').style.display='none'; sync(); break; } } } })();
+
+// Auto-join persistence (Scoped to session/tab)
+(async () => { 
+    const d = (await gameRef.once('value')).val(); 
+    if(d?.players) { 
+        for(let i=0; i<4; i++) { 
+            if(d.players['slot'+i].id===myId) { 
+                mySlot=i; document.getElementById('lobby').style.display='none'; sync(); break; 
+            } 
+        } 
+    } 
+})();
 </script>
 </body>
 </html>
