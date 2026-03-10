@@ -62,7 +62,9 @@
   .my-hand .card.hidden-hukm { cursor: not-allowed; opacity: 0.7; }
 
   .hukm-indicator { position: fixed; top: 15px; left: 15px; z-index: 200; }
-  .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
+  .hukm-card { width: 45px; height: 65px; background: #900; border: 2px solid #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; position: relative; }
+  .hukm-card .corner { font-size: 0.6rem; padding: 1px; }
+  .hukm-card .suit-center { font-size: 1.3rem; }
   
   .overlay { position: fixed; inset: 0; background: var(--dark); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .round-end-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -216,13 +218,18 @@ function sync() {
             const capturedBox = pWrapper.querySelector('.mindi-captured');
             const capturedMindis = d.mindis?.['slot'+i] || [];
             capturedBox.innerHTML = '';
-            capturedMindis.forEach(mindiCard => {
-              const suit = mindiCard.slice(-1);
-              const rank = mindiCard.slice(0, -1);
-              const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
-              const isRed = 'HD'.includes(suit);
-              capturedBox.innerHTML += `<div class="mini-mindi ${isRed ? 'red' : ''}"><div class="rank">${rank}</div><div class="suit">${syms[suit]}</div></div>`;
-            });
+            if (capturedMindis && capturedMindis.length > 0) {
+              capturedMindis.forEach(mindiCard => {
+                const suit = mindiCard.slice(-1);
+                const rank = mindiCard.slice(0, -1);
+                const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
+                const isRed = 'HD'.includes(suit);
+                const miniCard = document.createElement('div');
+                miniCard.className = `mini-mindi ${isRed ? 'red' : ''}`;
+                miniCard.innerHTML = `<div class="rank">${rank}</div><div class="suit">${syms[suit]}</div>`;
+                capturedBox.appendChild(miniCard);
+              });
+            }
 
             const sEl = document.getElementById('slot-'+pos);
             if(!d.currentTrick?.['slot'+i]) {
@@ -238,11 +245,21 @@ function sync() {
         const hBox = document.getElementById('hukm-box');
         if(!d.hukmRevealed) {
           hBox.innerHTML = 'M';
-        } else if(!hBox.dataset.revealed || hBox.dataset.card !== d.hukmCard) {
-          hBox.innerHTML = '';
-          hBox.appendChild(createCardInner(d.hukmCard));
-          hBox.dataset.revealed = 'true';
-          hBox.dataset.card = d.hukmCard;
+          hBox.style.fontSize = '1.5rem';
+          hBox.style.display = 'flex';
+          hBox.style.alignItems = 'center';
+          hBox.style.justifyContent = 'center';
+          delete hBox.dataset.revealed;
+          delete hBox.dataset.card;
+        } else {
+          if(!hBox.dataset.revealed || hBox.dataset.card !== d.hukmCard) {
+            hBox.innerHTML = '';
+            hBox.style.fontSize = '';
+            const cardInner = createCardInner(d.hukmCard);
+            hBox.appendChild(cardInner);
+            hBox.dataset.revealed = 'true';
+            hBox.dataset.card = d.hukmCard;
+          }
         }
         
         document.getElementById('dealBtn').style.display = (mySlot===d.dealer && !d.started && pCount===4) ? 'block' : 'none';
@@ -374,12 +391,18 @@ async function handlePlay() {
       await gameRef.update({ hukmRevealed: true });
     }
     
-    if(d.leadSuit && !card.endsWith(d.leadSuit)) {
-        if(d.hands['slot'+mySlot].some(c=>c !== 'HUKM_HIDDEN' && c.endsWith(d.leadSuit))) {
+    // Check if player needs to follow suit
+    if(d.leadSuit && !card.endsWith(d.leadSuit) && card !== 'HUKM_HIDDEN') {
+        const currentHand = d.hands['slot'+mySlot] || [];
+        const hasLeadSuit = currentHand.some(c => c !== 'HUKM_HIDDEN' && c.endsWith(d.leadSuit));
+        
+        if(hasLeadSuit) {
           return alert("You must follow suit!");
         }
+        
+        // Player doesn't have lead suit - offer to reveal Hukm
         if(!d.hukmRevealed) {
-            if(confirm("Cannot follow suit. Reveal Hukm card?")) {
+            if(confirm("You don't have the lead suit. Reveal Hukm card now?")) {
                 const h = [...(d.hands['slot'+d.dealer] || [])];
                 // Replace HUKM_HIDDEN with actual card
                 const hiddenIdx = h.indexOf('HUKM_HIDDEN');
@@ -389,14 +412,18 @@ async function handlePlay() {
                   hukmRevealed: true, 
                   [`hands/slot${d.dealer}`]: h 
                 });
-                const d2 = (await gameRef.once('value')).val(); 
-                processPlay(card, idx, d2); 
-                return;
-            } else {
-              return;
+                
+                // If this player is the dealer, refresh their hand
+                if(mySlot === d.dealer) {
+                  alert("Hukm revealed! Select your card again.");
+                  document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected'));
+                  return;
+                }
             }
+            // Continue with play whether they revealed or not
         }
     }
+    
     processPlay(card, idx, d);
 }
 
