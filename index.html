@@ -20,7 +20,7 @@
   .player { background: rgba(0,0,0,0.8); padding: 6px 15px; border-radius: 20px; border: 1.5px solid #444; font-size: 0.8rem; width: fit-content; text-align: center; font-weight: bold; transition: 0.3s; }
   .active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); background: #000; color: var(--gold); }
   
-  /* Positions from Screenshot */
+  /* Positions */
   .top { top: 40px; }
   .bottom { bottom: 260px; }
   .left { left: 20px; }
@@ -52,8 +52,9 @@
 
   /* Hand controls */
   .controls { position: fixed; bottom: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 1000; pointer-events: none; }
-  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 14px 45px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4); margin-bottom: 15px; cursor: pointer; }
+  .btn { pointer-events: auto; background: var(--gold); color: black; border: none; padding: 14px 45px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4); margin-bottom: 15px; cursor: pointer; transition: 0.2s; }
   .btn:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
+  .btn:active:not(:disabled) { transform: scale(0.95); }
 
   .my-hand { pointer-events: auto; display: flex; justify-content: center; width: 95%; height: 120px; }
   .my-hand .card { margin-left: -35px; transition: 0.2s; cursor: pointer; }
@@ -131,11 +132,12 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gameRef = db.ref('mindi_final_v51');
+const gameRef = db.ref('mindi_final_v52');
 
 let myId = sessionStorage.getItem('mindi_uid') || 'u'+Math.random().toString(36).substr(2, 9);
 sessionStorage.setItem('mindi_uid', myId);
 let mySlot = null;
+let isProcessingPlay = false; // Prevent double-plays
 
 function toggleScoreboard() { 
   const p = document.getElementById('scorePanel'); 
@@ -182,7 +184,7 @@ async function joinGame() {
     }
     
     if(slot === -1) {
-      alert(`Table is full! ${occupiedSlots} players are seated. Use "CLEAR DATABASE" from the menu to reset.`);
+      alert(`Table is full! ${occupiedSlots} players are seated. Use "CLEAR DATABASE" to reset.`);
       return;
     }
     
@@ -215,42 +217,58 @@ function sync() {
             el.innerHTML = `${p.name || '...'}${d.dealer===i?' (D)':''}`;
             el.classList.toggle('active', d.turn===i && d.started);
             
+            // Render captured mindis
             const capturedBox = pWrapper.querySelector('.mindi-captured');
             const capturedMindis = d.mindis?.['slot'+i] || [];
-            capturedBox.innerHTML = '';
-            if (capturedMindis && capturedMindis.length > 0) {
-              capturedMindis.forEach(mindiCard => {
-                const suit = mindiCard.slice(-1);
-                const rank = mindiCard.slice(0, -1);
-                const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
-                const isRed = 'HD'.includes(suit);
-                const miniCard = document.createElement('div');
-                miniCard.className = `mini-mindi ${isRed ? 'red' : ''}`;
-                miniCard.innerHTML = `<div class="rank">${rank}</div><div class="suit">${syms[suit]}</div>`;
-                capturedBox.appendChild(miniCard);
-              });
+            const currentMindis = Array.from(capturedBox.children).map(c => c.dataset.card).join(',');
+            const newMindis = capturedMindis.join(',');
+            
+            if(currentMindis !== newMindis) {
+              capturedBox.innerHTML = '';
+              if (capturedMindis && capturedMindis.length > 0) {
+                capturedMindis.forEach(mindiCard => {
+                  const suit = mindiCard.slice(-1);
+                  const rank = mindiCard.slice(0, -1);
+                  const syms = {H:'♥', D:'♦', S:'♠', C:'♣'};
+                  const isRed = 'HD'.includes(suit);
+                  const miniCard = document.createElement('div');
+                  miniCard.className = `mini-mindi ${isRed ? 'red' : ''}`;
+                  miniCard.dataset.card = mindiCard;
+                  miniCard.innerHTML = `<div class="rank">${rank}</div><div class="suit">${syms[suit]}</div>`;
+                  capturedBox.appendChild(miniCard);
+                });
+              }
             }
 
+            // Render cards on table
             const sEl = document.getElementById('slot-'+pos);
-            if(!d.currentTrick?.['slot'+i]) {
+            const trickCard = d.currentTrick?.['slot'+i];
+            
+            if(!trickCard) {
               sEl.innerHTML = '';
-            } else if(!sEl.innerHTML || sEl.querySelector('.card')?.dataset?.card !== d.currentTrick['slot'+i]) {
-              sEl.innerHTML = '';
-              const cardEl = createCardUI(d.currentTrick['slot'+i]);
-              cardEl.dataset.card = d.currentTrick['slot'+i];
-              sEl.appendChild(cardEl);
+            } else {
+              const currentCard = sEl.querySelector('.card')?.dataset?.card;
+              if(currentCard !== trickCard) {
+                sEl.innerHTML = '';
+                const cardEl = createCardUI(trickCard);
+                cardEl.dataset.card = trickCard;
+                sEl.appendChild(cardEl);
+              }
             }
         }
         
+        // Render hukm indicator
         const hBox = document.getElementById('hukm-box');
         if(!d.hukmRevealed) {
-          hBox.innerHTML = 'M';
-          hBox.style.fontSize = '1.5rem';
-          hBox.style.display = 'flex';
-          hBox.style.alignItems = 'center';
-          hBox.style.justifyContent = 'center';
-          delete hBox.dataset.revealed;
-          delete hBox.dataset.card;
+          if(hBox.dataset.revealed) {
+            hBox.innerHTML = 'M';
+            hBox.style.fontSize = '1.5rem';
+            hBox.style.display = 'flex';
+            hBox.style.alignItems = 'center';
+            hBox.style.justifyContent = 'center';
+            delete hBox.dataset.revealed;
+            delete hBox.dataset.card;
+          }
         } else {
           if(!hBox.dataset.revealed || hBox.dataset.card !== d.hukmCard) {
             hBox.innerHTML = '';
@@ -263,10 +281,16 @@ function sync() {
         }
         
         document.getElementById('dealBtn').style.display = (mySlot===d.dealer && !d.started && pCount===4) ? 'block' : 'none';
-        document.getElementById('playBtn').disabled = (d.turn !== mySlot || !d.started);
+        document.getElementById('playBtn').disabled = (d.turn !== mySlot || !d.started || isProcessingPlay);
         
+        // Render player's hand
         const hand = document.getElementById('hand-list'); 
-        const currentHand = (d.hands?.['slot'+mySlot] || []).sort((a,b)=>a.slice(-1).localeCompare(b.slice(-1)));
+        const currentHand = (d.hands?.['slot'+mySlot] || []).sort((a,b)=>{
+          // Sort by suit, with HUKM_HIDDEN always last
+          if(a === 'HUKM_HIDDEN') return 1;
+          if(b === 'HUKM_HIDDEN') return -1;
+          return a.slice(-1).localeCompare(b.slice(-1));
+        });
         const existingCards = Array.from(hand.children).map(c => c.dataset.val);
         
         if(JSON.stringify(currentHand) !== JSON.stringify(existingCards)) {
@@ -286,6 +310,7 @@ function sync() {
                 if(nonHukmCards.length === 0) {
                   el.classList.remove('hidden-hukm');
                   el.style.cursor = 'pointer';
+                  el.style.opacity = '1';
                   el.onclick = () => { 
                     document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected')); 
                     el.classList.add('selected');
@@ -307,6 +332,7 @@ function sync() {
           });
         }
 
+        // Round end overlay
         const overlay = document.getElementById('round-end-overlay');
         if(d.roundResult && d.roundResult.active) {
             document.getElementById('winner-text').innerText = d.roundResult.winner || '';
@@ -343,7 +369,12 @@ function createCardBack() {
 async function dealNewGame() {
     const suits=['S','H','D','C'], ranks=['A','K','Q','J','10','9','8','7','6','5','4','3','2'], deck=[];
     suits.forEach(s=>ranks.forEach(r=>deck.push(r+s))); 
-    deck.sort(()=>Math.random()-0.5);
+    
+    // Shuffle using Fisher-Yates
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
     
     const hands={}; 
     for(let i=0; i<4; i++) hands['slot'+i]=deck.splice(0,13);
@@ -371,151 +402,219 @@ async function dealNewGame() {
 }
 
 async function handlePlay() {
+    if(isProcessingPlay) return;
+    
     const sel = document.querySelector('.selected'); 
     if(!sel) return alert("Please select a card!");
     
-    const d = (await gameRef.once('value')).val();
-    if(!d || d.turn !== mySlot) return;
+    isProcessingPlay = true;
     
-    let card = sel.dataset.val;
-    const idx = parseInt(sel.dataset.idx);
-    
-    // Check if trying to play hidden hukm card when not last card
-    if(card === 'HUKM_HIDDEN' && mySlot === d.dealer && !d.hukmRevealed) {
-      const nonHukmCards = (d.hands['slot'+mySlot] || []).filter(c => c !== 'HUKM_HIDDEN');
-      if(nonHukmCards.length > 0) {
-        return alert("You cannot play the hidden Hukm card until it's your last card!");
+    try {
+      const d = (await gameRef.once('value')).val();
+      if(!d || d.turn !== mySlot) {
+        isProcessingPlay = false;
+        return;
       }
-      // If it's the last card, reveal it and play it
-      card = d.hukmCard;
-      await gameRef.update({ hukmRevealed: true });
-    }
-    
-    // Check if player needs to follow suit
-    if(d.leadSuit && !card.endsWith(d.leadSuit) && card !== 'HUKM_HIDDEN') {
-        const currentHand = d.hands['slot'+mySlot] || [];
-        const hasLeadSuit = currentHand.some(c => c !== 'HUKM_HIDDEN' && c.endsWith(d.leadSuit));
-        
-        if(hasLeadSuit) {
-          return alert("You must follow suit!");
+      
+      let card = sel.dataset.val;
+      const idx = parseInt(sel.dataset.idx);
+      
+      // Check if trying to play hidden hukm card when not last card
+      if(card === 'HUKM_HIDDEN' && mySlot === d.dealer && !d.hukmRevealed) {
+        const nonHukmCards = (d.hands['slot'+mySlot] || []).filter(c => c !== 'HUKM_HIDDEN');
+        if(nonHukmCards.length > 0) {
+          isProcessingPlay = false;
+          return alert("You cannot play the hidden Hukm card until it's your last card!");
         }
-        
-        // Player doesn't have lead suit - offer to reveal Hukm
-        if(!d.hukmRevealed) {
-            if(confirm("You don't have the lead suit. Reveal Hukm card now?")) {
-                const h = [...(d.hands['slot'+d.dealer] || [])];
-                // Replace HUKM_HIDDEN with actual card
-                const hiddenIdx = h.indexOf('HUKM_HIDDEN');
-                if(hiddenIdx !== -1) h[hiddenIdx] = d.hukmCard;
-                
-                await gameRef.update({ 
-                  hukmRevealed: true, 
-                  [`hands/slot${d.dealer}`]: h 
-                });
-                
-                // If this player is the dealer, refresh their hand
-                if(mySlot === d.dealer) {
-                  alert("Hukm revealed! Select your card again.");
-                  document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected'));
+        // If it's the last card, reveal it and play it
+        card = d.hukmCard;
+        await gameRef.update({ hukmRevealed: true });
+        // Refresh data after revealing
+        const d2 = (await gameRef.once('value')).val();
+        await processPlay(card, idx, d2);
+        return;
+      }
+      
+      // Check if player needs to follow suit
+      if(d.leadSuit && !card.endsWith(d.leadSuit) && card !== 'HUKM_HIDDEN') {
+          const currentHand = d.hands['slot'+mySlot] || [];
+          const hasLeadSuit = currentHand.some(c => c !== 'HUKM_HIDDEN' && c.endsWith(d.leadSuit));
+          
+          if(hasLeadSuit) {
+            isProcessingPlay = false;
+            return alert("You must follow suit!");
+          }
+          
+          // Player doesn't have lead suit
+          if(!d.hukmRevealed) {
+              // Dealer CANNOT reveal trump themselves (only when it's their last card, handled above)
+              if(mySlot === d.dealer) {
+                isProcessingPlay = false;
+                return alert("As dealer, you cannot reveal the trump card unless it's your last card!");
+              }
+              
+              // Non-dealer can choose to reveal trump
+              if(confirm("You don't have the lead suit. Reveal Hukm card now?\n\n(If revealed, you must play trump if you have one)")) {
+                  const h = [...(d.hands['slot'+d.dealer] || [])];
+                  // Replace HUKM_HIDDEN with actual card
+                  const hiddenIdx = h.indexOf('HUKM_HIDDEN');
+                  if(hiddenIdx !== -1) h[hiddenIdx] = d.hukmCard;
+                  
+                  await gameRef.update({ 
+                    hukmRevealed: true, 
+                    [`hands/slot${d.dealer}`]: h 
+                  });
+                  
+                  // Wait for DB to update
+                  await new Promise(resolve => setTimeout(resolve, 300));
+                  
+                  // Now check if player has trump - they MUST play it if they revealed
+                  const refreshedData = (await gameRef.once('value')).val();
+                  const myHand = refreshedData.hands['slot'+mySlot] || [];
+                  const hasTrump = myHand.some(c => c.endsWith(refreshedData.hukmSuit));
+                  
+                  if(hasTrump && !card.endsWith(refreshedData.hukmSuit)) {
+                    isProcessingPlay = false;
+                    alert("You revealed the trump, so you MUST play a trump card!");
+                    document.querySelectorAll('.my-hand .card').forEach(x=>x.classList.remove('selected'));
+                    return;
+                  }
+                  
+                  // Valid play after revealing
+                  await processPlay(card, idx, refreshedData);
                   return;
-                }
-            }
-            // Continue with play whether they revealed or not
-        }
+              } else {
+                // Declined to reveal - can play any card
+                await processPlay(card, idx, d);
+                return;
+              }
+          } else {
+            // Trump already revealed - no requirement to play trump, can fish any card
+            await processPlay(card, idx, d);
+            return;
+          }
+      }
+      
+      await processPlay(card, idx, d);
+    } catch(error) {
+      console.error("Error in handlePlay:", error);
+      isProcessingPlay = false;
+      alert("Error playing card. Please try again.");
     }
-    
-    processPlay(card, idx, d);
 }
 
 async function processPlay(card, idx, d) {
-    const hand = [...(d.hands['slot'+mySlot] || [])];
-    
-    // If playing the hidden hukm as last card, use actual card value
-    if(hand[idx] === 'HUKM_HIDDEN') {
-      card = d.hukmCard;
-    }
-    
-    hand.splice(idx, 1);
-    
-    const trick = {...(d.currentTrick || {})}; 
-    trick['slot'+mySlot] = card;
-    
-    let updates = { 
-      [`hands/slot${mySlot}`]: hand, 
-      currentTrick: trick, 
-      turn: (d.turn+1)%4 
-    };
-    
-    if(!d.leadSuit) updates.leadSuit = card.slice(-1);
-    
-    const played = Object.values(trick).filter(c=>c!=="");
-    
-    if(played.length === 4) {
-        const rankMap={'A':14,'K':13,'Q':12,'J':11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
-        let winS=0, hi=-1;
-        const freshD = (await gameRef.once('value')).val();
-        
-        for(let i=0; i<4; i++) {
-            const c=trick['slot'+i], s=c.slice(-1), r=c.slice(0,-1);
-            let p = rankMap[r];
-            if(freshD.hukmRevealed && s === freshD.hukmSuit) p += 100;
-            else if(s !== freshD.leadSuit) p = 0;
-            if(p > hi) { hi = p; winS = i; }
-        }
-        
-        const tens = played.filter(c=>c.startsWith('10'));
-        updates[`mindis/slot${winS}`] = [...(freshD.mindis?.[`slot${winS}`]||[]), ...tens];
-        updates[`totalTricksWon/slot${winS}`] = (freshD.totalTricksWon?.[`slot${winS}`]||0) + 1;
-        updates.turn = winS; 
-        updates.leadSuit = "";
-        updates.currentTrick = {slot0:"",slot1:"",slot2:"",slot3:""};
-        
-        const totalA = (freshD.mindis?.slot0?.length||0) + (freshD.mindis?.slot2?.length||0) + ((winS===0||winS===2)?tens.length:0);
-        const totalB = (freshD.mindis?.slot1?.length||0) + (freshD.mindis?.slot3?.length||0) + ((winS===1||winS===3)?tens.length:0);
-        
-        // Check if all 4 mindis are captured
-        if(totalA + totalB === 4) {
-            let scA = freshD.matchScore.A, scB = freshD.matchScore.B;
-            const tA = (freshD.totalTricksWon?.slot0||0) + (freshD.totalTricksWon?.slot2||0) + ((winS===0||winS===2)?1:0);
-            const tB = (freshD.totalTricksWon?.slot1||0) + (freshD.totalTricksWon?.slot3||0) + ((winS===1||winS===3)?1:0);
-            
-            let winMsg = "", reason = "";
-            
-            // Only award point if one team captured all 4 mindis
-            if(totalA === 4) { 
-              scA++; 
-              winMsg = "TEAM A WINS ROUND!"; 
-              reason = "Captured all 4 Mindis!"; 
-            } else if(totalB === 4) { 
-              scB++; 
-              winMsg = "TEAM B WINS ROUND!"; 
-              reason = "Captured all 4 Mindis!"; 
-            } else {
-              // It's a draw - use tiebreaker for who won round, but no point awarded
-              if(tA > tB) { 
-                winMsg = "DRAW - No Points"; 
-                reason = `Mindis split ${totalA}-${totalB}. Team A had more tricks (${tA} vs ${tB})`;
-              } else if(tB > tA) { 
-                winMsg = "DRAW - No Points"; 
-                reason = `Mindis split ${totalA}-${totalB}. Team B had more tricks (${tB} vs ${tA})`;
+    try {
+      const hand = [...(d.hands['slot'+mySlot] || [])];
+      
+      // If playing the hidden hukm as last card, use actual card value
+      if(hand[idx] === 'HUKM_HIDDEN') {
+        card = d.hukmCard;
+      }
+      
+      hand.splice(idx, 1);
+      
+      const trick = {...(d.currentTrick || {})}; 
+      trick['slot'+mySlot] = card;
+      
+      let updates = { 
+        [`hands/slot${mySlot}`]: hand, 
+        currentTrick: trick, 
+        turn: (d.turn+1)%4 
+      };
+      
+      if(!d.leadSuit) updates.leadSuit = card.slice(-1);
+      
+      const played = Object.values(trick).filter(c=>c!=="");
+      
+      if(played.length === 4) {
+          // Wait for all players to see the complete trick
+          await gameRef.update(updates);
+          
+          // Determine trick winner
+          const rankMap={'A':14,'K':13,'Q':12,'J':11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
+          let winS=0, hi=-1;
+          const freshD = (await gameRef.once('value')).val();
+          
+          for(let i=0; i<4; i++) {
+              const c=trick['slot'+i], s=c.slice(-1), r=c.slice(0,-1);
+              let p = rankMap[r];
+              if(freshD.hukmRevealed && s === freshD.hukmSuit) p += 100;
+              else if(s !== freshD.leadSuit) p = 0;
+              if(p > hi) { hi = p; winS = i; }
+          }
+          
+          const tens = played.filter(c=>c.startsWith('10'));
+          const trickUpdates = {
+            [`mindis/slot${winS}`]: [...(freshD.mindis?.[`slot${winS}`]||[]), ...tens],
+            [`totalTricksWon/slot${winS}`]: (freshD.totalTricksWon?.[`slot${winS}`]||0) + 1,
+            turn: winS, 
+            leadSuit: "",
+            currentTrick: {slot0:"",slot1:"",slot2:"",slot3:""}
+          };
+          
+          const totalA = (freshD.mindis?.slot0?.length||0) + (freshD.mindis?.slot2?.length||0) + ((winS===0||winS===2)?tens.length:0);
+          const totalB = (freshD.mindis?.slot1?.length||0) + (freshD.mindis?.slot3?.length||0) + ((winS===1||winS===3)?tens.length:0);
+          
+          // Check if all 4 mindis are captured (round end)
+          if(totalA + totalB === 4) {
+              let scA = freshD.matchScore.A, scB = freshD.matchScore.B;
+              const tA = (freshD.totalTricksWon?.slot0||0) + (freshD.totalTricksWon?.slot2||0) + ((winS===0||winS===2)?1:0);
+              const tB = (freshD.totalTricksWon?.slot1||0) + (freshD.totalTricksWon?.slot3||0) + ((winS===1||winS===3)?1:0);
+              
+              let winMsg = "", reason = "";
+              
+              // Only award point if one team captured all 4 mindis
+              if(totalA === 4) { 
+                scA++; 
+                winMsg = "TEAM A WINS ROUND!"; 
+                reason = "Captured all 4 Mindis!"; 
+              } else if(totalB === 4) { 
+                scB++; 
+                winMsg = "TEAM B WINS ROUND!"; 
+                reason = "Captured all 4 Mindis!"; 
               } else {
-                winMsg = "DRAW - No Points"; 
-                reason = `Mindis split ${totalA}-${totalB}. Equal tricks (${tA} each)`;
+                // It's a draw - use tiebreaker for display, but no point awarded
+                if(tA > tB) { 
+                  winMsg = "DRAW - No Points"; 
+                  reason = `Mindis split ${totalA}-${totalB}. Team A had more tricks (${tA} vs ${tB})`;
+                } else if(tB > tA) { 
+                  winMsg = "DRAW - No Points"; 
+                  reason = `Mindis split ${totalA}-${totalB}. Team B had more tricks (${tB} vs ${tA})`;
+                } else {
+                  winMsg = "DRAW - No Points"; 
+                  reason = `Mindis split ${totalA}-${totalB}. Equal tricks (${tA} each)`;
+                }
               }
-            }
-            
-            updates.matchScore = {A:scA, B:scB};
-            updates.started = false;
-            updates.dealer = (freshD.dealer+1)%4;
-            updates.hands = {slot0:[],slot1:[],slot2:[],slot3:[]};
-            updates.roundResult = {active:true, winner: winMsg, reason: reason};
-            
-            setTimeout(() => gameRef.child('roundResult/active').set(false), 5000);
-        }
-        
-        setTimeout(() => gameRef.update(updates), 1200);
-    } else { 
-      await gameRef.update(updates); 
+              
+              trickUpdates.matchScore = {A:scA, B:scB};
+              trickUpdates.started = false;
+              trickUpdates.dealer = (freshD.dealer+1)%4;
+              trickUpdates.hands = {slot0:[],slot1:[],slot2:[],slot3:[]};
+              trickUpdates.mindis = {slot0:[],slot1:[],slot2:[],slot3:[]};
+              trickUpdates.totalTricksWon = {slot0:0,slot1:0,slot2:0,slot3:0};
+              trickUpdates.hukmRevealed = false;
+              trickUpdates.hukmCard = "";
+              trickUpdates.hukmSuit = "";
+              trickUpdates.leadSuit = "";
+              trickUpdates.roundResult = {active:true, winner: winMsg, reason: reason};
+              
+              setTimeout(() => gameRef.child('roundResult/active').set(false), 5000);
+          }
+          
+          // Delay to show complete trick before clearing
+          setTimeout(() => {
+            gameRef.update(trickUpdates).then(() => {
+              isProcessingPlay = false;
+            });
+          }, 1500);
+      } else { 
+        await gameRef.update(updates);
+        isProcessingPlay = false;
+      }
+    } catch(error) {
+      console.error("Error in processPlay:", error);
+      isProcessingPlay = false;
     }
 }
 
@@ -556,6 +655,7 @@ async function clearDatabaseFromLobby() {
   }
 }
 
+// Auto-rejoin on page load
 (async () => { 
     const d = (await gameRef.once('value')).val(); 
     if(d?.players) { 
