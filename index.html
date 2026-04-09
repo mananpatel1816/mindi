@@ -165,12 +165,7 @@ body{font-family:'Outfit',-apple-system,sans-serif;background:var(--bg);color:#f
 .mm-s{font-size:7px;line-height:1;color:#111;}
 .mm.isred .mm-r,.mm.isred .mm-s{color:#dc2626;}
 
-/* ── AVATAR POSITIONS — UNO STYLE ──
-   Top: 1 center
-   Left: 2 stacked (top-left, bottom-left)
-   Right: 2 stacked (top-right, bottom-right)
-   Bottom: 1 center (YOU)
-*/
+/* ── AVATAR POSITIONS ── */
 .pos-top    {top:62px;left:50%;transform:translateX(-50%);}
 .pos-lt     {top:200px;left:8px;}
 .pos-lb     {top:390px;left:8px;}
@@ -183,24 +178,6 @@ body{font-family:'Outfit',-apple-system,sans-serif;background:var(--bg);color:#f
 .c2{background:#047857;} .c3{background:#b91c1c;}
 .c4{background:#b45309;} .c5{background:#be185d;}
 
-/* ── OPPONENT HAND FANS (face-down card stacks) ── */
-.opp-hand{
-  position:absolute;display:flex;z-index:5;
-}
-/* Left players: horizontal strip of card backs, vertical */
-.opp-hand.left{
-  flex-direction:column;gap:-6px;
-  left:54px;align-items:flex-start;
-}
-.opp-hand.right{
-  flex-direction:column;gap:-6px;
-  right:54px;align-items:flex-end;
-}
-.opp-hand.top{
-  flex-direction:row;
-  top:110px;left:50%;transform:translateX(-50%);
-}
-
 /* ── TRICK CENTER ── */
 .trick-center{
   position:absolute;top:50%;left:50%;
@@ -211,13 +188,12 @@ body{font-family:'Outfit',-apple-system,sans-serif;background:var(--bg);color:#f
   position:absolute;
   width:var(--cw);height:var(--ch);
 }
-/* Trick slot offsets from center — match player positions */
-/* bottom player card  */ .s-bot  {transform:translate(-25px, 38px);}
-/* right-bot card      */ .s-rb   {transform:translate( 60px, 18px);}
-/* right-top card      */ .s-rt   {transform:translate( 60px,-48px);}
-/* top card            */ .s-top  {transform:translate(-25px,-98px);}
-/* left-top card       */ .s-lt   {transform:translate(-106px,-48px);}
-/* left-bot card       */ .s-lb   {transform:translate(-106px, 18px);}
+.s-bot  {transform:translate(-25px, 38px);}
+.s-rb   {transform:translate( 60px, 18px);}
+.s-rt   {transform:translate( 60px,-48px);}
+.s-top  {transform:translate(-25px,-98px);}
+.s-lt   {transform:translate(-106px,-48px);}
+.s-lb   {transform:translate(-106px, 18px);}
 
 /* ── CARDS ── */
 .card{
@@ -238,7 +214,6 @@ body{font-family:'Outfit',-apple-system,sans-serif;background:var(--bg);color:#f
   font-size:1.65rem;font-weight:900;color:var(--gold);
   font-family:'Outfit',sans-serif;
 }
-/* Card corner label */
 .cc{
   position:absolute;
   display:flex;flex-direction:column;align-items:center;
@@ -248,7 +223,6 @@ body{font-family:'Outfit',-apple-system,sans-serif;background:var(--bg);color:#f
 .cc.br{bottom:2px;right:3px;transform:rotate(180deg);}
 .cc .cv{font-size:0.63rem;}
 .cc .cs{font-size:0.72rem;}
-/* Center suit */
 .center-suit{
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);
@@ -458,10 +432,6 @@ body{font-family:'Outfit',-apple-system,sans-serif;background:var(--bg);color:#f
   <!-- Deal button -->
   <button id="dealBtn" onclick="dealNewGame()">DEAL CARDS</button>
 
-  <!--
-    Avatar wrappers: IDs are p-0 through p-5 (real slot numbers).
-    CSS position classes are assigned dynamically based on mySlot.
-  -->
   <div id="p-0" class="av-wrap"><div class="avatar c0"><div class="dealer-dot">D</div></div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-1" class="av-wrap"><div class="avatar c1"><div class="dealer-dot">D</div></div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-2" class="av-wrap"><div class="avatar c2"><div class="dealer-dot">D</div></div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
@@ -469,7 +439,7 @@ body{font-family:'Outfit',-apple-system,sans-serif;background:var(--bg);color:#f
   <div id="p-4" class="av-wrap"><div class="avatar c4"><div class="dealer-dot">D</div></div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-5" class="av-wrap"><div class="avatar c5"><div class="dealer-dot">D</div></div><div class="av-name">YOU</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
 
-  <!-- Trick cards — all relative to center of felt -->
+  <!-- Trick cards -->
   <div class="trick-center" id="trickCenter">
     <div id="slot-0" class="slot-card"></div>
     <div id="slot-1" class="slot-card"></div>
@@ -505,7 +475,6 @@ const gameRef = db.ref('mindi_6p_v3');
 const SYMS = {H:'♥', D:'♦', S:'♠', C:'♣'};
 const SUIT_NAME = {H:'Hearts', D:'Diamonds', S:'Spades', C:'Clubs'};
 const RANK_VAL = {A:14,K:13,Q:12,J:11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3};
-// Note: 2s removed from game
 
 let myId = sessionStorage.getItem('mindi_uid') || 'u'+Math.random().toString(36).substr(2,9);
 sessionStorage.setItem('mindi_uid', myId);
@@ -531,10 +500,7 @@ function showToast(msg, dur=2800){
 }
 
 // ── Visual position (vp) mapping ──
-// vp=0: bottom (ME), vp=1: right-bottom, vp=2: right-top,
-// vp=3: top-center, vp=4: left-top, vp=5: left-bottom
 const VP_POS = ['pos-bot','pos-rb','pos-rt','pos-top','pos-lt','pos-lb'];
-// Trick slot CSS class per visual position
 const VP_SLOT = ['s-bot','s-rb','s-rt','s-top','s-lt','s-lb'];
 const ALL_POS = ['pos-bot','pos-rb','pos-rt','pos-top','pos-lt','pos-lb'];
 const ALL_SLOT = ['s-bot','s-rb','s-rt','s-top','s-lt','s-lb'];
@@ -561,15 +527,12 @@ function mkCard(c){
   const isRed = 'HD'.includes(s);
   const rc = isRed ? ' suit-red' : '';
 
-  // Top-left corner
   const tl = document.createElement('div');
   tl.className = 'cc tl';
   tl.innerHTML = `<span class="cv${rc}">${v}</span><span class="cs${rc}">${SYMS[s]}</span>`;
-  // Bottom-right corner (rotated)
   const br = document.createElement('div');
   br.className = 'cc br';
   br.innerHTML = `<span class="cv${rc}">${v}</span><span class="cs${rc}">${SYMS[s]}</span>`;
-  // Center suit
   const ct = document.createElement('div');
   ct.className = 'center-suit' + rc;
   ct.textContent = SYMS[s];
@@ -620,7 +583,6 @@ function sync(){
 
     const pn = i => d.players['slot'+i]?.name || '?';
 
-    // Scoreboard
     document.getElementById('tALbl').textContent = `${pn(0)} · ${pn(2)} · ${pn(4)}`;
     document.getElementById('tBLbl').textContent = `${pn(1)} · ${pn(3)} · ${pn(5)}`;
     const sa=d.matchScore?.A||0, sb=d.matchScore?.B||0;
@@ -631,7 +593,6 @@ function sync(){
     for(let i=0;i<6;i++) mt+=toArr(d.mindis?.['slot'+i]).length;
     document.getElementById('mCnt').textContent=mt+'/4';
 
-    // Hukm pill
     const hi=document.getElementById('hukmIcon');
     const hl=document.getElementById('hukmLabel');
     if(d.hukmRevealed && d.hukmCard){
@@ -657,7 +618,6 @@ function sync(){
       const mr=wrap.querySelector('.mindi-row');
       const displayName=p.name||'?';
 
-      // Rebuild avatar initials (preserve dealer-dot child)
       const dot=av.querySelector('.dealer-dot');
       while(av.lastChild && av.lastChild!==dot) av.removeChild(av.lastChild);
       if(dot!==av.lastChild) av.appendChild(dot);
@@ -670,7 +630,6 @@ function sync(){
       const handLen=toArr(d.hands?.['slot'+i]).length;
       cb.textContent=d.started ? handLen : '-';
 
-      // Mindi display — rebuild only if changed
       const cms=toArr(d.mindis?.['slot'+i]);
       const curKeys=Array.from(mr.children).map(c=>c.dataset.c).join(',');
       const newKeys=cms.join(',');
@@ -682,7 +641,6 @@ function sync(){
           const div=document.createElement('div');
           div.className='mm'+(isRed?' isred':'');
           div.dataset.c=mc;
-          // Build rank and suit spans explicitly
           const rspan=document.createElement('div'); rspan.className='mm-r'; rspan.textContent=v;
           const sspan=document.createElement('div'); sspan.className='mm-s'; sspan.textContent=SYMS[s];
           div.appendChild(rspan); div.appendChild(sspan);
@@ -690,7 +648,6 @@ function sync(){
         });
       }
 
-      // Trick slot card
       const sEl=document.getElementById('slot-'+i);
       const tc=d.currentTrick?.['slot'+i]||'';
       if(!tc){
@@ -706,17 +663,14 @@ function sync(){
       }
     }
 
-    // Deal button visibility
     document.getElementById('dealBtn').style.display=
       (mySlot===d.dealer && !d.started && pCount===6) ? 'block' : 'none';
 
-    // Play button
     document.getElementById('playBtn').disabled=
       (d.turn!==mySlot || !d.started || isProcessing);
 
     renderHand(d);
 
-    // Round overlay
     const ov=document.getElementById('roundOv');
     if(d.roundResult?.active){
       document.getElementById('winTxt').textContent=d.roundResult.winner||'';
@@ -731,7 +685,6 @@ function renderHand(d){
   const hDiv=document.getElementById('handCards');
   const rawHand=toArr(d.hands?.['slot'+mySlot]);
 
-  // Sort by suit then rank; HUKM_HIDDEN always last
   const SUIT_ORD={S:0,C:1,H:2,D:3};
   const myHand=[...rawHand].sort((a,b)=>{
     if(a==='HUKM_HIDDEN') return 1;
@@ -741,8 +694,6 @@ function renderHand(d){
     return (RANK_VAL[b.slice(0,-1)]||0)-(RANK_VAL[a.slice(0,-1)]||0);
   });
 
-  // Build a state key that captures everything that should trigger a re-render:
-  // cards in hand + trump mode + which round/dealer we're in
   const stateKey = myHand.join(',') + '|' + (mustPlayTrump ? mustTrumpSuit : '') + '|' + (d.dealer??'') + '|' + (d.started?'1':'0');
   if(hDiv.dataset.stateKey === stateKey) return;
   hDiv.dataset.stateKey = stateKey;
@@ -764,7 +715,6 @@ function renderHand(d){
       }
     } else {
       el=mkCard(c);
-      // In mustPlayTrump mode, lock all non-trump cards
       if(mustPlayTrump && !c.endsWith(mustTrumpSuit)){
         el.classList.add('trump-locked');
         el.onclick=()=>showToast('You must play a '+SUIT_NAME[mustTrumpSuit]+' '+SYMS[mustTrumpSuit]+' card!');
@@ -781,12 +731,10 @@ function renderHand(d){
 
 // ── DEAL ──
 async function dealNewGame(){
-  // Deck: A K Q J 10 9 8 7 6 5 4 3  — NO 2s (4×12 = 48 cards = 8 per player)
   const suits=['S','H','D','C'];
   const ranks=['A','K','Q','J','10','9','8','7','6','5','4','3'];
   const deck=[];
   suits.forEach(s=>ranks.forEach(r=>deck.push(r+s)));
-  // Fisher-Yates shuffle
   for(let i=deck.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [deck[i],deck[j]]=[deck[j],deck[i]];
@@ -795,7 +743,6 @@ async function dealNewGame(){
   for(let i=0;i<6;i++) hands['slot'+i]=deck.splice(0,8);
 
   const d=(await gameRef.once('value')).val();
-  // Choose random hukm card from dealer's hand
   const hIdx=Math.floor(Math.random()*8);
   const hCard=hands['slot'+d.dealer].splice(hIdx,1)[0];
   hands['slot'+d.dealer].push('HUKM_HIDDEN');
@@ -821,15 +768,6 @@ async function handlePlay(){
   const sel=document.querySelector('#handCards .card.selected');
   if(!sel){ showToast('Select a card first!'); return; }
 
-  // Enforce trump selection if player chose to reveal hukm
-  if(mustPlayTrump){
-    const card=sel.dataset.val;
-    if(!card.endsWith(mustTrumpSuit)){
-      showToast('Must play a '+SUIT_NAME[mustTrumpSuit]+' '+SYMS[mustTrumpSuit]+' card!');
-      return;
-    }
-  }
-
   isProcessing=true;
   document.getElementById('playBtn').disabled=true;
 
@@ -837,8 +775,7 @@ async function handlePlay(){
     const d=(await gameRef.once('value')).val();
     if(!d||d.turn!==mySlot){ isProcessing=false; return; }
 
-    let card=sel.dataset.val;
-    const idx=parseInt(sel.dataset.idx);
+    const card=sel.dataset.val;
 
     // ── Playing hidden hukm as dealer (last card) ──
     if(card==='HUKM_HIDDEN' && mySlot===d.dealer && !d.hukmRevealed){
@@ -846,19 +783,31 @@ async function handlePlay(){
       if(others.length>0){ isProcessing=false; showToast('Play Hukm only as your last card!'); return; }
       await gameRef.update({hukmRevealed:true});
       const d2=(await gameRef.once('value')).val();
-      await processPlay(d.hukmCard, idx, d2);
+      await processPlay(d.hukmCard, d2);
       return;
     }
 
     // ── First card of trick (sets lead suit) ──
     if(!d.leadSuit){
-      await processPlay(card, idx, d);
+      await processPlay(card, d);
+      return;
+    }
+
+    // ── FIX: If player already chose to reveal trump, skip all suit checks ──
+    if(mustPlayTrump){
+      if(!card.endsWith(mustTrumpSuit)){
+        showToast('Must play a '+SUIT_NAME[mustTrumpSuit]+' '+SYMS[mustTrumpSuit]+' card!');
+        isProcessing=false;
+        document.getElementById('playBtn').disabled=false;
+        return;
+      }
+      await processPlay(card, d);
       return;
     }
 
     // ── Following suit ──
     if(card.endsWith(d.leadSuit)){
-      await processPlay(card, idx, d);
+      await processPlay(card, d);
       return;
     }
 
@@ -868,18 +817,18 @@ async function handlePlay(){
     if(hasLead){
       showToast(`Must follow suit: ${SUIT_NAME[d.leadSuit]} ${SYMS[d.leadSuit]}`);
       isProcessing=false;
+      document.getElementById('playBtn').disabled=false;
       return;
     }
 
     // ── No lead suit in hand — show bluff/reveal modal ──
-    mPendCard=card; mPendIdx=idx; mPendData=d;
+    mPendCard=card; mPendData=d;
     const isDealer=(mySlot===d.dealer);
     const canReveal=!d.hukmRevealed;
 
     const btnReveal=document.getElementById('btnReveal');
 
     if(isDealer){
-      // Dealer CANNOT reveal trump — must bluff
       document.getElementById('modalTitle').textContent='No Lead Suit in Hand';
       document.getElementById('modalSub').textContent=
         `You don't have ${SUIT_NAME[d.leadSuit]} ${SYMS[d.leadSuit]}. As the Hukm holder you must play a bluff card.`;
@@ -890,7 +839,6 @@ async function handlePlay(){
         `You don't have ${SUIT_NAME[d.leadSuit]} ${SYMS[d.leadSuit]}. Reveal the Hukm and play trump, or bluff!`;
       btnReveal.style.display='block';
     } else {
-      // Hukm already revealed — they can play any card (off-suit is allowed)
       document.getElementById('modalTitle').textContent='No Lead Suit in Hand';
       document.getElementById('modalSub').textContent=
         `You don't have ${SUIT_NAME[d.leadSuit]} ${SYMS[d.leadSuit]}. Play any card.`;
@@ -898,14 +846,14 @@ async function handlePlay(){
     }
 
     document.getElementById('modalOv').classList.add('open');
-    // Note: isProcessing stays true until modal resolves
+    // isProcessing stays true until modal resolves
 
   } catch(e){ console.error(e); isProcessing=false; }
 }
 
 function closeModal(){
   document.getElementById('modalOv').classList.remove('open');
-  mPendCard=null; mPendIdx=null; mPendData=null;
+  mPendCard=null; mPendData=null;
   mustPlayTrump=false; mustTrumpSuit='';
   document.getElementById('trumpBanner').classList.remove('show');
   isProcessing=false;
@@ -915,9 +863,8 @@ function closeModal(){
 async function modalReveal(){
   document.getElementById('modalOv').classList.remove('open');
   const d=mPendData;
-  mPendCard=null; mPendIdx=null; mPendData=null;
+  mPendCard=null; mPendData=null;
 
-  // Reveal hukm — swap HUKM_HIDDEN in dealer's hand for the real card
   if(!d.hukmRevealed){
     const dh=toArr(d.hands['slot'+d.dealer]);
     const hi=dh.indexOf('HUKM_HIDDEN');
@@ -931,19 +878,15 @@ async function modalReveal(){
   const hasTrump=myH2.some(c=>c!=='HUKM_HIDDEN'&&c.endsWith(d2.hukmSuit));
 
   if(hasTrump){
-    // Player HAS trump — lock non-trump cards and let them choose which to play
     mustPlayTrump=true;
     mustTrumpSuit=d2.hukmSuit;
     document.getElementById('trumpBanner').classList.add('show');
-    // Clear selection so they must explicitly pick a trump card
     document.querySelectorAll('#handCards .card').forEach(x=>x.classList.remove('selected'));
-    // Force hand re-render with trump-locked cards (stateKey will differ due to mustTrumpSuit)
     renderHand(d2);
     isProcessing=false;
     document.getElementById('playBtn').disabled=false;
     showToast('Hukm revealed! Pick a '+SUIT_NAME[d2.hukmSuit]+' '+SYMS[d2.hukmSuit]+' to play', 3500);
   } else {
-    // No trump in hand — play any card freely
     mustPlayTrump=false;
     mustTrumpSuit='';
     isProcessing=false;
@@ -954,20 +897,27 @@ async function modalReveal(){
 
 async function modalBluff(){
   document.getElementById('modalOv').classList.remove('open');
-  const d=mPendData, card=mPendCard, idx=mPendIdx;
-  mPendCard=null; mPendIdx=null; mPendData=null;
-  // Play card as bluff — no suit enforcement
-  await processPlay(card, idx, d);
+  const d=mPendData, card=mPendCard;
+  mPendCard=null; mPendData=null;
+  await processPlay(card, d);
 }
 
 // ── PROCESS PLAY ──
-async function processPlay(card, idx, d){
+// FIX: removed idx parameter entirely — we now remove by card value, not by sorted display index
+async function processPlay(card, d){
   try{
     const hand=toArr(d.hands['slot'+mySlot]);
-    // If hidden hukm slot, swap in real card
-    if(hand[idx]==='HUKM_HIDDEN') card=d.hukmCard;
-    const newHand=[...hand];
-    newHand.splice(idx,1);
+
+    // FIX: determine which token to remove from Firebase hand
+    // If the card being played is the hukmCard and HUKM_HIDDEN is still in hand,
+    // remove the HUKM_HIDDEN token (not the real card value which doesn't exist in the array)
+    let cardToRemove = card;
+    if(card === d.hukmCard && hand.includes('HUKM_HIDDEN')){
+      cardToRemove = 'HUKM_HIDDEN';
+    }
+
+    // FIX: filter by value instead of splicing by visual sort index
+    const newHand = hand.filter(c => c !== cardToRemove);
 
     const trick={...(d.currentTrick||{})};
     trick['slot'+mySlot]=card;
@@ -979,7 +929,6 @@ async function processPlay(card, idx, d){
     };
     if(!d.leadSuit) upd.leadSuit=card.slice(-1);
 
-    // Push card immediately so others see it
     await gameRef.update(upd);
 
     // Reset trump-selection mode
@@ -987,20 +936,16 @@ async function processPlay(card, idx, d){
     mustTrumpSuit='';
     document.getElementById('trumpBanner').classList.remove('show');
 
-    // Check if all 6 played
     const played=Object.values(trick).filter(c=>c!=='');
     if(played.length<6){ isProcessing=false; return; }
 
-    // Wait for visual display, then evaluate
     await new Promise(r=>setTimeout(r,1000));
 
-    // Guard: re-fetch to check if trick was already evaluated by another client
     const d2=(await gameRef.once('value')).val();
     if(!d2 || Object.values(d2.currentTrick||{}).filter(c=>c!=='').length<6){
       isProcessing=false; return;
     }
 
-    // Use DB's currentTrick as source of truth, not local variable
     await evaluateTrick(d2, d2.currentTrick);
   } catch(e){ console.error(e); isProcessing=false; }
 }
@@ -1008,7 +953,6 @@ async function processPlay(card, idx, d){
 // ── EVALUATE TRICK ──
 async function evaluateTrick(d, trickRaw){
   try{
-    // Normalise: trickRaw may be a Firebase object; ensure we have a plain object with all 6 slots
     const trick = {slot0:'',slot1:'',slot2:'',slot3:'',slot4:'',slot5:''};
     for(let i=0;i<6;i++){
       const v = trickRaw?.['slot'+i];
@@ -1029,7 +973,6 @@ async function evaluateTrick(d, trickRaw){
       if(score>best){ best=score; winSlot=i; }
     }
 
-    // Collect tens (mindis)
     const trickTens=Object.values(trick).filter(c=>c&&c.startsWith('10'));
     const pm=d.mindis||{};
     const accM={};
@@ -1047,7 +990,6 @@ async function evaluateTrick(d, trickRaw){
     const emptyTrick={slot0:'',slot1:'',slot2:'',slot3:'',slot4:'',slot5:''};
 
     if(tA+tB===4){
-      // ── Round over ──
       const trA=newPT.slot0+newPT.slot2+newPT.slot4;
       const trB=newPT.slot1+newPT.slot3+newPT.slot5;
       let scA=d.matchScore?.A||0, scB=d.matchScore?.B||0;
@@ -1065,7 +1007,6 @@ async function evaluateTrick(d, trickRaw){
         winMsg='DRAW'; reason=`Tens ${tA}–${tB}, Tricks ${trA}–${trB}`;
       }
 
-      // Single atomic update — eliminates all race conditions
       await gameRef.update({
         matchScore:{A:scA,B:scB},
         started:false,
@@ -1083,7 +1024,6 @@ async function evaluateTrick(d, trickRaw){
       setTimeout(()=>gameRef.child('roundResult/active').set(false), 5500);
 
     } else {
-      // ── Mid-game, winner leads next trick ──
       await gameRef.update({
         [`mindis/slot${winSlot}`]:accM['slot'+winSlot],
         [`totalTricksWon/slot${winSlot}`]:newPT['slot'+winSlot],
