@@ -1,70 +1,3 @@
-
-
-<!doctype html> <html lang="en"> <head> <meta charset="utf-8" /> <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" /> <title>Mindi Pro - 6 Player</title> <style> :root { --green: #1a5e3a; --dark: #050c1a; --gold: #f6c85f; --card-
-
-pasted
-
-this is my code for mindi, please fix some of the bugs where cards are re-appearing even after the rounds and then when first mindi is collected, it shows up correctly but when seond one was collected the shape under the plater name was not right, also limit the number of characters for names to be 4 and make cards just little smaller because we play on iphone 17pro so make it so the UI looks cleaner
-
-12:32 PM
-
-Diagnosed race conditions, restructured async updates, and optimized mobile UI
-Diagnosed race conditions, restructured async updates, and optimized mobile UI
-Looking at the bugs carefully:
-
-Cards reappearing — The setTimeout-based updates create a race condition where dealNewGame() can be overwritten by the stale delayed update
-Second mindi display — Firebase can return single-element arrays as objects; the string comparison also needs to handle this
-Name limit — Need maxlength="4" + truncation
-Card size — Reduce for iPhone 17 Pro screen
-
-Created a file, read a file
-Created a file, read a file
-Here's what was fixed:
-
-Bug fixes:
-
-Cards reappearing after rounds — The old code had a race condition: the 1500ms setTimeout could fire after dealNewGame(), overwriting the new game state. Fixed by restructuring processPlay to first push the played card to Firebase immediately, then after the 1200ms visual delay, apply trick results in a single atomic update. Round-end now fires one clean update with no delayed callbacks that could conflict.
-Second mindi display broken — Firebase sometimes returns a single-element array as a plain object {0: "10H"} instead of ["10H"]. Added a toArray() helper that handles both cases with Array.isArray() check. Also replaced the shared .top-left/.bot-right CSS class names on mini-card internals (they conflicted with player position classes) with .m-rank and .m-suit.
-Other improvements:
-
-Name limit to 4 chars — maxlength="4" on the input + .toUpperCase() so names display crisply
-Smaller cards — --card-w: 50px; --card-h: 72px (down from 65×95), hand overlap reduced to -26px
-Cleaner UI — Tighter spacing throughout, scaled down fonts and padding, safe-area insets for iPhone notch, removed the CSS class name conflicts between player positions and card corners
-Mindi 6player
-Code · HTML 
-its still not as clean as I'd like, I want it look like how UNO game looks on Imassage game pegion
-
-11:51 AM
-
-Architected complete visual redesign mimicking Game Pigeon's polished aesthetic
-Architected complete visual redesign mimicking Game Pigeon's polished aesthetic
-Complete redesign inspired by Game Pigeon's UNO aesthetic. Here's what changed:
-
-Visual overhaul:
-
-Deep navy background with a rich green felt that glows softly in the center — same depth as UNO's table
-Circular colored avatars for each player (6 distinct colors) with a gold dealer dot, active glow ring, and card count badge below — exactly how Game Pigeon shows players
-Clean header bar with a Hukm pill on the left (shows ? until revealed, then the suit symbol with red/black coloring) and score pills on the right — compact and always visible
-Cards are smaller and cleaner with a proper back design (dark navy + gold "M")
-The Play button glows gold only when it's your turn; grayed out otherwise
-Selected card lifts with a blue border and subtle shadow — same feel as tapping a card in UNO
-Deal button pulses with a gold glow animation when waiting to deal
-The menu tucks into a hamburger icon in the header instead of floating separately
-Round end shows a frosted overlay card with the result
-All previous bug fixes are still in — no race conditions, toArr() for Firebase array safety, atomic round-end updates.
-
-Mindi 6player
-Code · HTML 
-
-You are out of free messages until 4:00 PM
-Upgrade
-
-
-
-Claude is AI and can make mistakes. Please double-check responses.
-Mindi 6player · HTML
-Copy
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -89,7 +22,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
 }
- 
+
 .felt {
   position: relative;
   width: 100vw;
@@ -105,7 +38,7 @@ body {
   background: radial-gradient(ellipse 60% 45% at 50% 50%, rgba(255,255,255,0.025) 0%, transparent 70%);
   pointer-events: none;
 }
- 
+
 /* LOBBY */
 .lobby {
   position: fixed; inset: 0; z-index: 9000;
@@ -146,7 +79,7 @@ body {
 .pbtn:active { transform: scale(0.96); opacity: 0.85; }
 .pbtn.primary { background: var(--gold); color: #1a0000; }
 .pbtn.danger { background: rgba(127,29,29,0.9); color: #fca5a5; margin-top: 10px; }
- 
+
 /* HEADER */
 .header {
   position: fixed; top: 0; left: 0; right: 0; height: 52px;
@@ -176,7 +109,7 @@ body {
   font-size: 0.62rem; font-weight: 700; color: rgba(255,255,255,0.4);
 }
 .sc-pill b { font-size: 0.95rem; color: var(--gold); }
- 
+
 /* MENU */
 .menu-btn {
   background: rgba(0,0,0,0.4);
@@ -188,7 +121,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .menu-btn span { width: 15px; height: 1.5px; background: rgba(255,255,255,0.6); border-radius: 2px; }
- 
+
 .score-panel {
   position: fixed; top: 54px; right: 10px;
   background: rgba(8,15,26,0.97);
@@ -210,7 +143,7 @@ body {
 }
 .sp-act.g { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); }
 .sp-act.r { background: rgba(127,29,29,0.9); color: #fca5a5; }
- 
+
 /* AVATARS */
 .av-wrap {
   position: absolute;
@@ -261,7 +194,7 @@ body {
 .mm .mr { font-size: 5px; font-weight: 900; line-height: 1; color: #111; }
 .mm .ms { font-size: 6.5px; line-height: 1; color: #111; }
 .mm.red .mr, .mm.red .ms { color: #cc0000; }
- 
+
 /* Avatar positions */
 .pos0 { top: 58px; left: 16px; }
 .pos1 { top: 58px; right: 16px; }
@@ -269,7 +202,7 @@ body {
 .pos3 { top: 50%; right: 4px; transform: translateY(-50%); }
 .pos4 { bottom: 188px; left: 20px; }
 .pos5 { bottom: 188px; left: 50%; transform: translateX(-50%); }
- 
+
 /* Avatar colors */
 .c0 { background: #1d4ed8; }
 .c1 { background: #7c3aed; }
@@ -277,7 +210,7 @@ body {
 .c3 { background: #b91c1c; }
 .c4 { background: #b45309; }
 .c5 { background: #be185d; }
- 
+
 /* TRICK SLOTS */
 .slot-card { position: absolute; width: var(--card-w); height: var(--card-h); }
 .s0 { transform: translate(-52px, -52px); }
@@ -286,7 +219,7 @@ body {
 .s3 { transform: translate( 100px, 0); }
 .s4 { transform: translate(-52px,  50px); }
 .s5 { transform: translate(   0,   68px); }
- 
+
 /* CARDS */
 .card {
   width: var(--card-w); height: var(--card-h);
@@ -309,7 +242,7 @@ body {
 .br { bottom: 1px; right: 2px; transform: rotate(180deg); }
 .cs { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 1.25rem; line-height: 1; }
 .red { color: #dc2626; }
- 
+
 /* HAND */
 .hand-area {
   position: fixed; bottom: env(safe-area-inset-bottom, 0); left: 0; right: 0;
@@ -339,7 +272,7 @@ body {
 .hand-cards .card:first-child { margin-left: 0; }
 .hand-cards .card.selected { transform: translateY(-16px) scale(1.05); border: 2.5px solid #3b82f6; box-shadow: 0 6px 18px rgba(59,130,246,0.4); z-index: 200 !important; }
 .hand-cards .card.locked { cursor: not-allowed; opacity: 0.5; }
- 
+
 /* DEAL BTN */
 #dealBtn {
   position: absolute; z-index: 600; display: none;
@@ -354,7 +287,7 @@ body {
   0%,100% { box-shadow: 0 6px 22px rgba(251,191,36,0.45); }
   50% { box-shadow: 0 6px 32px rgba(251,191,36,0.75); }
 }
- 
+
 /* ROUND END */
 .round-ov {
   position: fixed; inset: 0;
@@ -373,7 +306,7 @@ body {
 </style>
 </head>
 <body>
- 
+
 <div class="lobby" id="lobby">
   <div class="lobby-logo">Mindi</div>
   <div class="lobby-sub">6 Player</div>
@@ -381,14 +314,14 @@ body {
   <button class="pbtn primary" onclick="joinGame()">Join Table</button>
   <button class="pbtn danger" onclick="clearDatabaseFromLobby()">Clear Table</button>
 </div>
- 
+
 <div class="round-ov" id="roundOv">
   <div class="round-card">
     <div class="rw" id="winTxt"></div>
     <div class="rr" id="whyTxt"></div>
   </div>
 </div>
- 
+
 <div class="felt">
   <div class="header">
     <div class="hukm-pill">
@@ -401,7 +334,7 @@ body {
       <div class="menu-btn" onclick="toggleMenu()"><span></span><span></span><span></span></div>
     </div>
   </div>
- 
+
   <div class="score-panel" id="scorePanel">
     <div class="sp-row"><span id="tALbl" style="color:#7dd3fc;font-size:0.68rem;">A</span><span class="sp-score" id="spA">0</span></div>
     <div class="sp-row"><span id="tBLbl" style="color:#f9a8d4;font-size:0.68rem;">B</span><span class="sp-score" id="spB">0</span></div>
@@ -411,16 +344,16 @@ body {
       <button class="sp-act r" onclick="clearDatabase()">Clear Database</button>
     </div>
   </div>
- 
+
   <button id="dealBtn" onclick="dealNewGame()">DEAL CARDS</button>
- 
+
   <div id="p-0" class="av-wrap pos0"><div class="avatar c0"><div class="dealer-dot"></div>?</div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-1" class="av-wrap pos1"><div class="avatar c1"><div class="dealer-dot"></div>?</div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-2" class="av-wrap pos2"><div class="avatar c2"><div class="dealer-dot"></div>?</div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-3" class="av-wrap pos3"><div class="avatar c3"><div class="dealer-dot"></div>?</div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-4" class="av-wrap pos4"><div class="avatar c4"><div class="dealer-dot"></div>?</div><div class="av-name">...</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
   <div id="p-5" class="av-wrap pos5"><div class="avatar c5"><div class="dealer-dot"></div>ME</div><div class="av-name">YOU</div><div class="card-badge">-</div><div class="mindi-row"></div></div>
- 
+
   <div id="slots" style="position:relative;width:1px;height:1px;">
     <div id="slot-0" class="slot-card s0"></div>
     <div id="slot-1" class="slot-card s1"></div>
@@ -430,12 +363,12 @@ body {
     <div id="slot-5" class="slot-card s5"></div>
   </div>
 </div>
- 
+
 <div class="hand-area">
   <button id="playBtn" class="play-btn" onclick="handlePlay()" disabled>PLAY CARD</button>
   <div id="handCards" class="hand-cards"></div>
 </div>
- 
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script>
@@ -451,16 +384,16 @@ firebase.initializeApp({
 const db = firebase.database();
 const gameRef = db.ref('mindi_6player_v1');
 const SYMS = {H:'♥',D:'♦',S:'♠',C:'♣'};
- 
+
 let myId = sessionStorage.getItem('mindi_uid') || 'u'+Math.random().toString(36).substr(2,9);
 sessionStorage.setItem('mindi_uid', myId);
 let mySlot = null;
 let isProcessing = false;
- 
+
 function toArr(v){ if(!v) return []; return Array.isArray(v)?v:Object.values(v); }
 function vp(s){ return (s - mySlot + 6) % 6; }
 function toggleMenu(){ const p=document.getElementById('scorePanel'); p.style.display=p.style.display==='block'?'none':'block'; }
- 
+
 function cardInner(c){
   const s=c.slice(-1),v=c.slice(0,-1),r='HD'.includes(s)?'red':'';
   const f=document.createDocumentFragment();
@@ -474,7 +407,7 @@ function cardInner(c){
 function mkCard(c){ const e=document.createElement('div'); e.className='card'; if(c) e.appendChild(cardInner(c)); return e; }
 function mkBack(){ const e=document.createElement('div'); e.className='card card-back'; return e; }
 function sel(el){ document.querySelectorAll('.hand-cards .card').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); }
- 
+
 async function joinGame(){
   const raw=document.getElementById('userName').value.trim()||'P';
   const name=raw.substring(0,4).toUpperCase();
@@ -490,7 +423,7 @@ async function joinGame(){
   document.getElementById('lobby').style.display='none';
   sync();
 }
- 
+
 function sync(){
   gameRef.on('value',snap=>{
     const d=snap.val(); if(!d||!d.players) return;
@@ -502,7 +435,7 @@ function sync(){
     ['spB','hSB'].forEach(id=>document.getElementById(id).textContent=sb);
     let mt=0; for(let i=0;i<6;i++) mt+=toArr(d.mindis?.['slot'+i]).length;
     document.getElementById('mCnt').textContent=`${mt}/4`;
- 
+
     const hi=document.getElementById('hukmIcon');
     const hl=document.getElementById('hukmLabel');
     if(d.hukmRevealed&&d.hukmCard){
@@ -510,7 +443,7 @@ function sync(){
       hi.textContent=SYMS[hs]; hi.style.background='HD'.includes(hs)?'rgba(220,38,38,0.3)':'rgba(255,255,255,0.12)';
       hi.style.color='HD'.includes(hs)?'#f87171':'#fff'; hl.textContent=d.hukmCard.slice(0,-1)+SYMS[hs];
     } else { hi.textContent='?'; hi.style.background='#7f1d1d'; hi.style.color=''; hl.textContent='HUKM'; }
- 
+
     let pCount=0;
     for(let i=0;i<6;i++){
       const pos=vp(i), p=d.players['slot'+i]; if(p.id) pCount++;
@@ -527,7 +460,7 @@ function sync(){
       av.classList.toggle('active', d.turn===i&&d.started);
       av.classList.toggle('is-dealer', d.dealer===i);
       cb.textContent=d.started?toArr(d.hands?.['slot'+i]).length:'-';
- 
+
       // Mindis
       const cms=toArr(d.mindis?.['slot'+i]);
       const existing=Array.from(mr.children).map(c=>c.dataset.card).join(',');
@@ -541,7 +474,7 @@ function sync(){
           mr.appendChild(div);
         });
       }
- 
+
       // Trick slot
       const sEl=document.getElementById('slot-'+pos);
       const tc=d.currentTrick?.['slot'+i]||'';
@@ -550,10 +483,10 @@ function sync(){
         sEl.innerHTML=''; const cel=mkCard(tc); cel.dataset.card=tc; sEl.appendChild(cel);
       }
     }
- 
+
     document.getElementById('dealBtn').style.display=(mySlot===d.dealer&&!d.started&&pCount===6)?'block':'none';
     document.getElementById('playBtn').disabled=(d.turn!==mySlot||!d.started||isProcessing);
- 
+
     // My hand
     const hDiv=document.getElementById('handCards');
     const myHand=toArr(d.hands?.['slot'+mySlot]).sort((a,b)=>{
@@ -575,7 +508,7 @@ function sync(){
         el.dataset.val=c; el.dataset.idx=idx; hDiv.appendChild(el);
       });
     }
- 
+
     const ov=document.getElementById('roundOv');
     if(d.roundResult?.active){
       document.getElementById('winTxt').textContent=d.roundResult.winner||'';
@@ -584,7 +517,7 @@ function sync(){
     } else { ov.style.display='none'; }
   });
 }
- 
+
 async function dealNewGame(){
   const suits=['S','H','D','C'],ranks=['A','K','Q','J','10','9','8','7','6','5','4','3','2'],deck=[];
   suits.forEach(s=>ranks.forEach(r=>deck.push(r+s)));
@@ -595,7 +528,7 @@ async function dealNewGame(){
   hands['slot'+d.dealer].push('HUKM_HIDDEN');
   await gameRef.update({started:true,turn:(d.dealer+1)%6,hands,currentTrick:{slot0:'',slot1:'',slot2:'',slot3:'',slot4:'',slot5:''},hukmCard:hCard,hukmSuit:hCard.slice(-1),hukmRevealed:false,leadSuit:'',mindis:{slot0:[],slot1:[],slot2:[],slot3:[],slot4:[],slot5:[]},totalTricksWon:{slot0:0,slot1:0,slot2:0,slot3:0,slot4:0,slot5:0},roundResult:{active:false}});
 }
- 
+
 async function handlePlay(){
   if(isProcessing) return;
   const s=document.querySelector('.hand-cards .card.selected');
@@ -637,7 +570,7 @@ async function handlePlay(){
     await processPlay(card,idx,d);
   } catch(e){ console.error(e); isProcessing=false; }
 }
- 
+
 async function processPlay(card,idx,d){
   try{
     const hand=toArr(d.hands['slot'+mySlot]);
@@ -682,11 +615,11 @@ async function processPlay(card,idx,d){
     isProcessing=false;
   } catch(e){ console.error(e); isProcessing=false; }
 }
- 
+
 async function resetMatch(){ if(confirm("Reset match?")){ await gameRef.remove(); location.reload(); } }
 async function clearDatabase(){ if(confirm("Delete ALL data?")){ await gameRef.remove(); sessionStorage.removeItem('mindi_uid'); location.reload(); } }
 async function clearDatabaseFromLobby(){ if(confirm("Clear table?")){ await gameRef.remove(); sessionStorage.removeItem('mindi_uid'); myId='u'+Math.random().toString(36).substr(2,9); sessionStorage.setItem('mindi_uid',myId); location.reload(); } }
- 
+
 (async()=>{
   const d=(await gameRef.once('value')).val();
   if(d?.players) for(let i=0;i<6;i++){
@@ -696,4 +629,3 @@ async function clearDatabaseFromLobby(){ if(confirm("Clear table?")){ await game
 </script>
 </body>
 </html>
- 
