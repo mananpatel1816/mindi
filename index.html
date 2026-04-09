@@ -741,13 +741,13 @@ function renderHand(d){
     return (RANK_VAL[b.slice(0,-1)]||0)-(RANK_VAL[a.slice(0,-1)]||0);
   });
 
-  const existVals=Array.from(hDiv.children).map(c=>c.dataset.val);
-  // Always re-render when mustPlayTrump changes (need to update locked states)
-  const sameCards=JSON.stringify(myHand)===JSON.stringify(existVals);
-  if(sameCards && !mustPlayTrump && !hDiv.dataset.trumpMode) return;
+  // Build a state key that captures everything that should trigger a re-render:
+  // cards in hand + trump mode + which round/dealer we're in
+  const stateKey = myHand.join(',') + '|' + (mustPlayTrump ? mustTrumpSuit : '') + '|' + (d.dealer??'') + '|' + (d.started?'1':'0');
+  if(hDiv.dataset.stateKey === stateKey) return;
+  hDiv.dataset.stateKey = stateKey;
 
   hDiv.innerHTML='';
-  hDiv.dataset.trumpMode = mustPlayTrump ? '1' : '';
 
   myHand.forEach((c,idx)=>{
     const isHukm=c==='HUKM_HIDDEN';
@@ -937,9 +937,7 @@ async function modalReveal(){
     document.getElementById('trumpBanner').classList.add('show');
     // Clear selection so they must explicitly pick a trump card
     document.querySelectorAll('#handCards .card').forEach(x=>x.classList.remove('selected'));
-    // Force hand re-render with trump-locked cards
-    const hDiv=document.getElementById('handCards');
-    hDiv.dataset.trumpMode='';
+    // Force hand re-render with trump-locked cards (stateKey will differ due to mustTrumpSuit)
     renderHand(d2);
     isProcessing=false;
     document.getElementById('playBtn').disabled=false;
@@ -994,7 +992,7 @@ async function processPlay(card, idx, d){
     if(played.length<6){ isProcessing=false; return; }
 
     // Wait for visual display, then evaluate
-    await new Promise(r=>setTimeout(r,750));
+    await new Promise(r=>setTimeout(r,1000));
 
     // Guard: re-fetch to check if trick was already evaluated by another client
     const d2=(await gameRef.once('value')).val();
@@ -1002,13 +1000,20 @@ async function processPlay(card, idx, d){
       isProcessing=false; return;
     }
 
-    await evaluateTrick(d2, trick);
+    // Use DB's currentTrick as source of truth, not local variable
+    await evaluateTrick(d2, d2.currentTrick);
   } catch(e){ console.error(e); isProcessing=false; }
 }
 
 // ── EVALUATE TRICK ──
-async function evaluateTrick(d, trick){
+async function evaluateTrick(d, trickRaw){
   try{
+    // Normalise: trickRaw may be a Firebase object; ensure we have a plain object with all 6 slots
+    const trick = {slot0:'',slot1:'',slot2:'',slot3:'',slot4:'',slot5:''};
+    for(let i=0;i<6;i++){
+      const v = trickRaw?.['slot'+i];
+      if(v && typeof v === 'string') trick['slot'+i] = v;
+    }
     const ls=d.leadSuit||'';
     const hs=d.hukmSuit||'';
     const revealed=d.hukmRevealed;
