@@ -500,8 +500,8 @@ function showToast(msg, dur=2800){
 }
 
 // ── Visual position (vp) mapping ──
-const VP_POS = ['pos-bot','pos-rb','pos-rt','pos-top','pos-lt','pos-lb'];
-const VP_SLOT = ['s-bot','s-rb','s-rt','s-top','s-lt','s-lb'];
+const VP_POS = ['pos-bot','pos-lb','pos-lt','pos-top','pos-rt','pos-rb'];
+const VP_SLOT = ['s-bot','s-lb','s-lt','s-top','s-rt','s-rb'];
 const ALL_POS = ['pos-bot','pos-rb','pos-rt','pos-top','pos-lt','pos-lb'];
 const ALL_SLOT = ['s-bot','s-rb','s-rt','s-top','s-lt','s-lb'];
 
@@ -735,10 +735,15 @@ async function dealNewGame(){
   const ranks=['A','K','Q','J','10','9','8','7','6','5','4','3'];
   const deck=[];
   suits.forEach(s=>ranks.forEach(r=>deck.push(r+s)));
-  for(let i=deck.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [deck[i],deck[j]]=[deck[j],deck[i]];
+
+  // Three Fisher-Yates passes for thorough randomisation
+  for(let pass=0;pass<3;pass++){
+    for(let i=deck.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [deck[i],deck[j]]=[deck[j],deck[i]];
+    }
   }
+
   const hands={};
   for(let i=0;i<6;i++) hands['slot'+i]=deck.splice(0,8);
 
@@ -755,6 +760,10 @@ async function dealNewGame(){
     hukmCard:hCard,
     hukmSuit:hCard.slice(-1),
     hukmRevealed:false,
+    // Mid-trick reveal tracking — reset each round
+    hukmRevealedMidTrick:false,
+    hukmRevealedBySlot:-1,
+    trickLeadSlot:-1,
     leadSuit:'',
     mindis:{slot0:[],slot1:[],slot2:[],slot3:[],slot4:[],slot5:[]},
     totalTricksWon:{slot0:0,slot1:0,slot2:0,slot3:0,slot4:0,slot5:0},
@@ -869,7 +878,14 @@ async function modalReveal(){
     const dh=toArr(d.hands['slot'+d.dealer]);
     const hi=dh.indexOf('HUKM_HIDDEN');
     if(hi!==-1) dh[hi]=d.hukmCard;
-    await gameRef.update({hukmRevealed:true,[`hands/slot${d.dealer}`]:dh});
+    // Record that hukm was revealed mid-trick and by which seat,
+    // so evaluateTrick can give trump bonus only to post-reveal cards.
+    await gameRef.update({
+      hukmRevealed:true,
+      hukmRevealedMidTrick:true,
+      hukmRevealedBySlot:mySlot,
+      [`hands/slot${d.dealer}`]:dh
+    });
     await new Promise(r=>setTimeout(r,180));
   }
 
@@ -903,20 +919,15 @@ async function modalBluff(){
 }
 
 // ── PROCESS PLAY ──
-// FIX: removed idx parameter entirely — we now remove by card value, not by sorted display index
 async function processPlay(card, d){
   try{
     const hand=toArr(d.hands['slot'+mySlot]);
 
-    // FIX: determine which token to remove from Firebase hand
-    // If the card being played is the hukmCard and HUKM_HIDDEN is still in hand,
-    // remove the HUKM_HIDDEN token (not the real card value which doesn't exist in the array)
     let cardToRemove = card;
     if(card === d.hukmCard && hand.includes('HUKM_HIDDEN')){
       cardToRemove = 'HUKM_HIDDEN';
     }
 
-    // FIX: filter by value instead of splicing by visual sort index
     const newHand = hand.filter(c => c !== cardToRemove);
 
     const trick={...(d.currentTrick||{})};
@@ -927,7 +938,11 @@ async function processPlay(card, d){
       currentTrick:trick,
       turn:(d.turn+1)%6
     };
-    if(!d.leadSuit) upd.leadSuit=card.slice(-1);
+    if(!d.leadSuit){
+      upd.leadSuit=card.slice(-1);
+      // Record which seat led this trick so we know the play order in evaluateTrick
+      upd.trickLeadSlot=mySlot;
+    }
 
     await gameRef.update(upd);
 
@@ -958,9 +973,28 @@ async function evaluateTrick(d, trickRaw){
       const v = trickRaw?.['slot'+i];
       if(v && typeof v === 'string') trick['slot'+i] = v;
     }
-    const ls=d.leadSuit||'';
-    const hs=d.hukmSuit||'';
-    const revealed=d.hukmRevealed;
+
+    const ls = d.leadSuit || '';
+    const hs = d.hukmSuit || '';
+    const revealed = d.hukmRevealed;
+
+    // ── Mid-trick reveal: trump only beats cards played AFTER the reveal ──
+    // If hukm was revealed during this trick, cards already on the table
+    // before the reveal are scored as plain cards even if they are trump suit.
+    // Only cards played after the reveal moment gain trump superiority.
+    const midReveal = d.hukmRevealedMidTrick || false;
+    const revealerSlot = (d.hukmRevealedBySlot != null) ? d.hukmRevealedBySlot : -1;
+    const leadSlot    = (d.trickLeadSlot     != null) ? d.trickLeadSlot     : -1;
+
+    // Find at which position in the play order the reveal happened
+    // Play order: leadSlot, leadSlot+1, leadSlot+2, … (mod 6)
+    let revealerPosition = -1;
+    if(midReveal && leadSlot !== -1 && revealerSlot !== -1){
+      for(let pos = 0; pos < 6; pos++){
+        if((leadSlot + pos) % 6 === revealerSlot){ revealerPosition = pos; break; }
+      }
+    }
+
     let winSlot=0, best=-1;
 
     for(let i=0;i<6;i++){
@@ -968,8 +1002,23 @@ async function evaluateTrick(d, trickRaw){
       if(!c) continue;
       const s=c.slice(-1), r=c.slice(0,-1);
       let score=RANK_VAL[r]||0;
-      if(revealed && s===hs) score+=100;
+
+      // Decide whether this card earns trump superiority:
+      // - Normal (pre-revealed trump): all trump cards get the bonus.
+      // - Mid-trick reveal: only cards at a later position than the revealer get it.
+      let trumpApplies = revealed;
+      if(midReveal && revealerPosition !== -1 && leadSlot !== -1){
+        let cardPos = -1;
+        for(let pos = 0; pos < 6; pos++){
+          if((leadSlot + pos) % 6 === i){ cardPos = pos; break; }
+        }
+        // Cards played at or before the reveal position get no trump bonus
+        trumpApplies = (cardPos > revealerPosition);
+      }
+
+      if(trumpApplies && s===hs) score+=100;
       else if(s!==ls) score=0;
+
       if(score>best){ best=score; winSlot=i; }
     }
 
@@ -1017,6 +1066,9 @@ async function evaluateTrick(d, trickRaw){
         hukmRevealed:false,
         hukmCard:'',
         hukmSuit:'',
+        hukmRevealedMidTrick:false,
+        hukmRevealedBySlot:-1,
+        trickLeadSlot:-1,
         leadSuit:'',
         currentTrick:emptyTrick,
         roundResult:{active:true, winner:winMsg, reason}
@@ -1029,6 +1081,9 @@ async function evaluateTrick(d, trickRaw){
         [`totalTricksWon/slot${winSlot}`]:newPT['slot'+winSlot],
         turn:winSlot,
         leadSuit:'',
+        hukmRevealedMidTrick:false,
+        hukmRevealedBySlot:-1,
+        trickLeadSlot:-1,
         currentTrick:emptyTrick
       });
     }
