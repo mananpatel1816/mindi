@@ -1015,8 +1015,9 @@ async function evaluateTrick(d, trickRaw){
         for(let pos = 0; pos < 6; pos++){
           if((leadSlot + pos) % 6 === i){ cardPos = pos; break; }
         }
-        // Cards played at or before the reveal position get no trump bonus
-        trumpApplies = (cardPos > revealerPosition);
+        // Cards played before the reveal get no trump bonus;
+        // the revealer's own card AND all cards after also get it
+        trumpApplies = (cardPos >= revealerPosition);
       }
 
       if(trumpApplies && s===hs) score+=100;
