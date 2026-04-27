@@ -666,6 +666,9 @@ function sync(){
     document.getElementById('dealBtn').style.display=
       (mySlot===d.dealer && !d.started && pCount===6) ? 'block' : 'none';
 
+    // If Firebase says it's our turn, always clear any stale local lock
+    if(d.turn === mySlot && d.started) isProcessing = false;
+
     document.getElementById('playBtn').disabled=
       (d.turn!==mySlot || !d.started || isProcessing);
 
